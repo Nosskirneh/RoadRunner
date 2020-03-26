@@ -14,5 +14,11 @@ $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
+
+ifdef SB_ONLY
 after-install::
-	install.exec "killall -9 runningboardd backboardd"
+	install.exec "killall -9 SpringBoard"
+else
+after-install::
+		install.exec "killall -9 runningboardd backboardd"
+endif
