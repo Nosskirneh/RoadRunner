@@ -11,10 +11,6 @@
 - (int)rbs_pid;
 @end
 
-@interface RBLaunchdJobRegistry : NSObject
-+ (BOOL)_submitJob:(RBLaunchdJob *)job error:(id *)arg2;
-@end
-
 @interface RBProcessManager : NSObject
 @property (nonatomic, retain) NSString *nowPlayingBundleID;
 @property (nonatomic, retain) RBProcess *immortalProcess;

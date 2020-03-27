@@ -47,11 +47,6 @@ static inline int getPIDForProcess(RBProcess *process) {
     if (!process)
         return;
 
-    /* Is this necessary? */
-    NSError *error;
-    [%c(RBLaunchdJobRegistry) _submitJob:process.job error:&error];
-    // ---
-
     NSDictionary *processData = @{
         kBundleID : getBundleIDForProcess(process),
         kPID : @(getPIDForProcess(process))
