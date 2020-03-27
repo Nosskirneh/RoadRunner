@@ -73,7 +73,7 @@ FBApplicationProcess *getProcessForPID(int pid) {
 - (void)preventedAppShutdown:(NSDictionary *)data {
     _immortalBundleID = data[kBundleID];
     _immortalPID = [data[kPID] intValue];
-    [self reattachProcess];
+    [self reattachImmortalProcess];
 
     // SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
     // id aa = mediaController.nowPlayingApplication;
@@ -82,14 +82,14 @@ FBApplicationProcess *getProcessForPID(int pid) {
 }
 
 /* Reattach a process with a specific bundleID and pid */
-- (void)reattachProcess {
+- (void)reattachImmortalProcess {
     FBApplicationProcess *process = getProcessForPID(_immortalPID);
     if (!process)
         return;
 
     [process setNowPlayingWithAudio:YES];
 
-    SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
+    SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:_immortalBundleID];
     [app _processWillLaunch:process];
     [app _processDidLaunch:process];
 
@@ -108,7 +108,7 @@ FBApplicationProcess *getProcessForPID(int pid) {
     [app _setInternalProcessState:sbProcessSate];
 
     SpringBoard *springBoard = (SpringBoard *)[UIApplication sharedApplication];
-    [springBoard launchApplicationWithIdentifier:bundleID suspended:YES];
+    [springBoard launchApplicationWithIdentifier:_immortalBundleID suspended:YES];
 
     dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
     dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
