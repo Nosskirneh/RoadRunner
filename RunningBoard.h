@@ -20,6 +20,7 @@
 @property (nonatomic, retain) RBProcess *immortalProcess;
 @property (nonatomic, retain) KPCenter *kp_center_in;
 - (RBProcess *)processForIdentity:(id)identity;
+- (void)_removeProcess:(RBProcess *)process;
 @end
 
 @interface RBSProcessIdentifier : NSObject

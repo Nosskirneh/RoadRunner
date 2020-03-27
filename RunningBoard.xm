@@ -73,6 +73,11 @@ static inline int getPIDForProcess(RBProcess *process) {
 }
 
 - (BOOL)executeTerminateRequest:(RBSTerminateRequest *)request withError:(id *)arg2 {
+    // Close any previous immortal app
+    if (self.immortalProcess) {
+        [self _removeProcess:self.immortalProcess];
+    }
+
     RBSProcessIdentity *identity = request.processIdentity;
     if ([identity.embeddedApplicationIdentifier isEqualToString:self.nowPlayingBundleID]) {
         RBProcess *process = [self processForIdentity:identity];
