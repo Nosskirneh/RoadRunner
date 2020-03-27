@@ -3,21 +3,26 @@
 #import "RunningBoard.h"
 #import <notify.h>
 
+static inline NSString *getBundleIDForProcess(RBProcess *process) {
+    return process.bundleProperties.bundleIdentifier;
+}
+
+static inline int getPIDForProcess(RBProcess *process) {
+    return [process rbs_pid];
+}
+
 
 %hook RBProcessManager
 
 %property (nonatomic, retain) NSString *nowPlayingBundleID;
-%property (nonatomic, retain) RBProcess *savedProcess;
+%property (nonatomic, retain) RBProcess *immortalProcess;
 %property (nonatomic, retain) KPCenter *kp_center_in;
-%property (nonatomic, retain) KPCenter *kp_center_out;
 
 - (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
                    entitlementManager:(id)entitlementManager
                    jetsamBandProvider:(id)jetsamBandProvider
                              delegate:(id)delegate {
-    %log;
     self = %orig;
-    self.savedProcess = 0;
 
     KPCenter *center = [KPCenter centerNamed:KP_IDENTIFIER_RB];
     [center addTarget:self action:NOW_PLAYING_APP_CHANGED_SELECTOR];
@@ -37,45 +42,41 @@
 
 %new
 - (void)springBoardLoaded:(NSDictionary *)data {
-    %log;
-    log(@"SB loaded...");
     // Send information about which PID was prevented from closing
+    RBProcess *process = self.immortalProcess;
+    if (!process)
+        return;
 
-    RBProcess *savedProcess = self.savedProcess;
-    log(@"self.savedProcess: %lu", (unsigned long)[savedProcess rbs_pid]);
-    if (self.savedProcess) {
-        NSError *error;
-        [%c(RBLaunchdJobRegistry) _submitJob:savedProcess.job error:&error];
-        log(@"error: %@", error);
+    /* Is this necessary? */
+    NSError *error;
+    [%c(RBLaunchdJobRegistry) _submitJob:process.job error:&error];
+    // ---
 
-        NSDictionary *data = @{
-            kPID : @([savedProcess rbs_pid]),
-            kBundleID : savedProcess.bundleProperties.bundleIdentifier
-        };
-        log(@"calling PREVENTED_APP_SHUTDOWN_PID_SELECTOR");
+    NSDictionary *processData = @{
+        kBundleID : getBundleIDForProcess(process),
+        kPID : @(getPIDForProcess(process))
+    };
 
-        KPCenter *center = [KPCenter centerNamed:KP_IDENTIFIER_SB];
-        [center callExternalMethod:PREVENTED_APP_SHUTDOWN_PID_SELECTOR
-                     withArguments:data
-                        completion:nil];
-        // self.savedProcess = nil;
-    }
+    KPCenter *center = [KPCenter centerNamed:KP_IDENTIFIER_SB];
+    [center callExternalMethod:PREVENTED_APP_SHUTDOWN_PID_SELECTOR
+                 withArguments:processData
+                    completion:nil];
 }
 
 %new
 - (void)nowPlayingAppChanged:(NSDictionary *)data {
-    %log;
-    if (data)
+    if (data) {
         self.nowPlayingBundleID = data[kApp];
+    } else {
+        self.nowPlayingBundleID = nil;
+    }
 }
 
 - (BOOL)executeTerminateRequest:(RBSTerminateRequest *)request withError:(id *)arg2 {
-    %log;
     RBSProcessIdentity *identity = request.processIdentity;
     if ([identity.embeddedApplicationIdentifier isEqualToString:self.nowPlayingBundleID]) {
         RBProcess *process = [self processForIdentity:identity];
-        log(@"saving savedProcess: %@", process);
-        self.savedProcess = process;
+        self.immortalProcess = process;
         return NO;
     }
 
@@ -86,6 +87,7 @@
 
 
 %ctor {
-    if (%c(RBProcessManager) != nil)
+    if (%c(RBProcessManager) != nil) {
         %init;
+    }
 }

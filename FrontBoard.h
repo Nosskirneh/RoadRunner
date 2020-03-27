@@ -1,7 +1,9 @@
 @interface FBApplicationProcess : NSObject
 @property (nonatomic, copy, readonly) NSString *bundleIdentifier;
 @property (assign, getter=isNowPlayingWithAudio, nonatomic) BOOL nowPlayingWithAudio;
-- (void)killForReason:(long long)reason andReport:(BOOL)report withDescription:(id)description;
+- (void)killForReason:(long long)reason
+            andReport:(BOOL)report
+      withDescription:(id)description;
 @end
 
 @interface FBProcessManager : NSObject

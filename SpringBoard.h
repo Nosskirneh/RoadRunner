@@ -28,17 +28,8 @@
 - (id)applicationWithBundleIdentifier:(NSString *)bundleIdentifier;
 @end
 
-
-
-@interface SBDisplayItem : NSObject
-@property (nonatomic, copy, readonly) NSString *bundleIdentifier;
-@end
-
 @interface SBAppLayout : NSObject
 - (BOOL)containsItemWithBundleIdentifier:(NSString *)bundleIdentifier;
-- (NSArray<SBDisplayItem *> *)allItems;
-
-- (BOOL)containsAny:(NSSet<NSString *> *)bundleIdentifiers;
 @end
 
 @interface SBReusableSnapshotItemContainer : NSObject

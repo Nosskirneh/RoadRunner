@@ -1,5 +1,4 @@
 @interface RBLaunchdJob : NSObject
-// @property (nonatomic, copy, readonly) RBLaunchdJobLabel *label;
 @end
 
 @protocol RBBundleProperties
@@ -17,10 +16,9 @@
 @end
 
 @interface RBProcessManager : NSObject
-@property (retain) NSString *nowPlayingBundleID;
-@property (nonatomic, retain) RBProcess *savedProcess;
+@property (nonatomic, retain) NSString *nowPlayingBundleID;
+@property (nonatomic, retain) RBProcess *immortalProcess;
 @property (nonatomic, retain) KPCenter *kp_center_in;
-@property (nonatomic, retain) KPCenter *kp_center_out;
 - (RBProcess *)processForIdentity:(id)identity;
 @end
 
