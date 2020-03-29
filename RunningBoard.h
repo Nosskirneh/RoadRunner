@@ -34,20 +34,22 @@
 @property (nonatomic, copy, readonly) NSString *bundleIdentifier;
 @end
 
-@interface RBProcess : NSObject {
-    RBProcessState *_lock_appliedState;
-}
+@interface RBProcess : NSObject
+@property (nonatomic, assign) BOOL immortal;
+
 @property (nonatomic, readonly) RBLaunchdJob *job;
 @property (nonatomic, readonly) id<RBBundleProperties> bundleProperties;
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
+
 - (int)rbs_pid;
-- (void)_applyState:(RBProcessState *)state;
 @end
 
 @interface RBProcessManager : NSObject
 @property (nonatomic, retain) KPCenter *kp_center_in;
+@property (nonatomic, retain) RBProcess *immortalProcess;
 - (RBProcess *)processForIdentity:(RBSProcessIdentity *)identity;
 @end
+
 
 @interface RBSTerminateContext : NSObject
 @property (nonatomic, copy) NSArray *attributes;
@@ -55,7 +57,6 @@
 @property (nonatomic, copy) NSString *explanation;
 - (void)setMaximumTerminationResistance:(unsigned char)arg1;
 @end
-
 
 @interface RBSTerminateRequest : NSObject
 @property (copy, nonatomic) RBSProcessIdentity *processIdentity;

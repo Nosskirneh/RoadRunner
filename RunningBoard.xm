@@ -4,7 +4,7 @@
 #import <notify.h>
 
 static inline NSString *getBundleIDForProcess(RBProcess *process) {
-    return process.bundleProperties.bundleIdentifier;
+    return process.identity.embeddedApplicationIdentifier;
 }
 
 static inline int getPIDForProcess(RBProcess *process) {
@@ -12,11 +12,10 @@ static inline int getPIDForProcess(RBProcess *process) {
 }
 
 
-RBProcess *immortalProcess;
-
 %hook RBProcessManager
 
 %property (nonatomic, retain) KPCenter *kp_center_in;
+%property (nonatomic, retain) RBProcess *immortalProcess;
 
 - (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
                    entitlementManager:(id)entitlementManager
@@ -43,7 +42,7 @@ RBProcess *immortalProcess;
 %new
 - (void)springBoardLoaded:(NSDictionary *)data {
     // Send information about which PID was prevented from closing
-    RBProcess *process = immortalProcess;
+    RBProcess *process = self.immortalProcess;
     if (!process)
         return;
 
@@ -63,9 +62,11 @@ RBProcess *immortalProcess;
     if (data) {
         NSString *nowPlayingBundleID = data[kApp];
         RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:nowPlayingBundleID];
-        immortalProcess = [self processForIdentity:identity];
+        self.immortalProcess = [self processForIdentity:identity];
+        self.immortalProcess.immortal = YES;
     } else {
-        immortalProcess = nil;
+        self.immortalProcess.immortal = NO;
+        self.immortalProcess = nil;
     }
 }
 
@@ -74,8 +75,10 @@ RBProcess *immortalProcess;
 
 %hook RBProcess
 
+%property (nonatomic, assign) BOOL immortal;
+
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
-    if (self == immortalProcess) {
+    if (self.immortal) {
         return YES;
     }
     return %orig;

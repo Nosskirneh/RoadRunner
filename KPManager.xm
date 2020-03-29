@@ -1,7 +1,6 @@
 #import "KPManager.h"
 #import "Common.h"
 #import <MediaRemote/MediaRemote.h>
-#import <SpringBoard/SBMediaController.h>
 #import <notify.h>
 #import "FrontBoard.h"
 #import "SpringBoard.h"
@@ -50,18 +49,18 @@ FBApplicationProcess *getProcessForPID(int pid) {
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     NSDictionary *info = notification.userInfo;
     NSNumber *pid = info[(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey];
+    NSDictionary *data;
 
     if (pid) {
         int p = [pid intValue];
         FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:p];
         _nowPlayingBundleID = app.bundleIdentifier;
+        data = @{
+            kApp : _nowPlayingBundleID
+        };
     } else {
         _nowPlayingBundleID = nil;
     }
-
-    NSDictionary *data = @{
-        kApp : _nowPlayingBundleID
-    };
 
     [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
                       withArguments:data
@@ -110,7 +109,7 @@ FBApplicationProcess *getProcessForPID(int pid) {
     SpringBoard *springBoard = (SpringBoard *)[UIApplication sharedApplication];
     [springBoard launchApplicationWithIdentifier:_immortalBundleID suspended:YES];
 
-    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
+    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
     dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
         FBSceneManager *sceneManager = [%c(FBSceneManager) sharedInstance];
         FBScene *scene = [sceneManager sceneWithIdentifier:[app _baseSceneIdentifier]];
@@ -136,6 +135,7 @@ FBApplicationProcess *getProcessForPID(int pid) {
 - (void)killImmortalApp {
     FBApplicationProcess *process = getProcessForPID(_immortalPID);
     [process killForReason:kKilledByAppSwitcher andReport:NO withDescription:nil];
+
     _immortalBundleID = nil;
     _immortalPID = 0;
 }
