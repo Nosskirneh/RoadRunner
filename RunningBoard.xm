@@ -12,10 +12,10 @@ static inline int getPIDForProcess(RBProcess *process) {
 }
 
 
+RBProcess *immortalProcess;
+
 %hook RBProcessManager
 
-%property (nonatomic, retain) NSString *nowPlayingBundleID;
-%property (nonatomic, retain) RBProcess *immortalProcess;
 %property (nonatomic, retain) KPCenter *kp_center_in;
 
 - (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
@@ -43,7 +43,7 @@ static inline int getPIDForProcess(RBProcess *process) {
 %new
 - (void)springBoardLoaded:(NSDictionary *)data {
     // Send information about which PID was prevented from closing
-    RBProcess *process = self.immortalProcess;
+    RBProcess *process = immortalProcess;
     if (!process)
         return;
 
@@ -61,25 +61,23 @@ static inline int getPIDForProcess(RBProcess *process) {
 %new
 - (void)nowPlayingAppChanged:(NSDictionary *)data {
     if (data) {
-        self.nowPlayingBundleID = data[kApp];
+        NSString *nowPlayingBundleID = data[kApp];
+        RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:nowPlayingBundleID];
+        immortalProcess = [self processForIdentity:identity];
     } else {
-        self.nowPlayingBundleID = nil;
+        immortalProcess = nil;
     }
 }
 
-- (BOOL)executeTerminateRequest:(RBSTerminateRequest *)request withError:(id *)arg2 {
-    // Close any previous immortal app
-    if (self.immortalProcess) {
-        [self _removeProcess:self.immortalProcess];
-    }
+%end
 
-    RBSProcessIdentity *identity = request.processIdentity;
-    if ([identity.embeddedApplicationIdentifier isEqualToString:self.nowPlayingBundleID]) {
-        RBProcess *process = [self processForIdentity:identity];
-        self.immortalProcess = process;
-        return NO;
-    }
 
+%hook RBProcess
+
+- (BOOL)terminateWithContext:(RBSTerminateContext *)context {
+    if (self == immortalProcess) {
+        return YES;
+    }
     return %orig;
 }
 
