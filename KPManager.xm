@@ -20,9 +20,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     NSMutableSet *_immortalApps;
 }
 
-- (id)init {
-    self = [super init];
-
+- (void)setup {
     int token;
     notify_register_dispatch(kSBSpringBoardDidLaunchNotification,
         &token,
@@ -67,8 +65,15 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
             _center_out = [KPCenter centerNamed:KP_IDENTIFIER_RB];
         }
     );
+}
 
-    return self;
+- (void)setTrialEnded {
+    _trialEnded = YES;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+    [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
+                      withArguments:nil
+                         completion:nil];
 }
 
 - (void)dealloc {
@@ -99,7 +104,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
     dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
     dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
-
         // Restore MediaRemote
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
@@ -108,7 +112,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
         [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification
                               object:nil
                             userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingUserInfoKey: @(YES)}];
-
 
         // Restore SBMediaController
         SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
