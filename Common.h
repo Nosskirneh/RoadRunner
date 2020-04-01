@@ -5,3 +5,14 @@
 #define PREVENTED_APP_SHUTDOWN_PID_SELECTOR @selector(preventedAppShutdown:)
 
 #define kApp @"app"
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+BOOL isEnabled();
+
+#ifdef __cplusplus
+}
+#endif

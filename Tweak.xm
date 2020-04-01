@@ -63,6 +63,9 @@ KPManager *manager;
 
 %ctor {
     if (%c(SpringBoard) || %c(FBProcessManager)) {
+        if (!isEnabled())
+            return;
+
         manager = [[KPManager alloc] init];
         %init;
     }

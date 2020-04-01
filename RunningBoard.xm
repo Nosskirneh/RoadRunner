@@ -86,8 +86,10 @@
 %end
 
 
+
 %ctor {
-    if (%c(RBProcessManager) != nil) {
-        %init;
-    }
+    if (%c(RBProcessManager) == nil || !isEnabled())
+        return;
+
+    %init;
 }
