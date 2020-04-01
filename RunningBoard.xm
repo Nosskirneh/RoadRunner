@@ -31,14 +31,16 @@
 
 %new
 - (void)nowPlayingAppChanged:(NSDictionary *)data {
+    if (self.nowPlayingBundleID) {
+        RBProcess *previousPartyProcess = [self processForBundleID:self.nowPlayingBundleID];
+        previousPartyProcess.handle.partying = NO;
+        self.nowPlayingBundleID = nil;
+    }
+
     if (data) {
         self.nowPlayingBundleID = data[kApp];
         RBProcess *partyProcess = [self processForBundleID:self.nowPlayingBundleID];
         partyProcess.handle.partying = YES;
-    } else {
-        RBProcess *partyProcess = [self processForBundleID:self.nowPlayingBundleID];
-        partyProcess.handle.partying = NO;
-        self.nowPlayingBundleID = nil;
     }
 }
 
