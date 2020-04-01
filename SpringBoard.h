@@ -1,6 +1,17 @@
 #import "KPCenter.h"
 #import "FrontBoard.h"
 #import <SpringBoard/SBApplication.h>
+#import <SpringBoard/SBMediaController.h>
+#import "RunningBoardServices.h"
+
+
+
+@interface RBSProcessState (SB)
+@property (nonatomic, assign) BOOL partying;
+@property (nonatomic, assign) BOOL immortal;
+@end
+
+
 
 @interface SpringBoard : NSObject
 @property (nonatomic, retain) KPCenter *kp_center_in;
@@ -28,8 +39,13 @@
 - (id)applicationWithBundleIdentifier:(NSString *)bundleIdentifier;
 @end
 
+@interface SBDisplayItem : NSObject
+@property (nonatomic, copy, readonly) NSString *bundleIdentifier;
+@end
+
 @interface SBAppLayout : NSObject
 - (BOOL)containsItemWithBundleIdentifier:(NSString *)bundleIdentifier;
+- (NSArray<SBDisplayItem *> *)allItems;
 @end
 
 @interface SBReusableSnapshotItemContainer : NSObject

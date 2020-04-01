@@ -4,15 +4,16 @@
 	and reverse engineering.
 */
 
-@interface RBSProcessIdentifier : NSObject
-- (int)rbs_pid;
+#import "RunningBoardServices.h"
+
+
+
+@interface RBSProcessHandle (RB)
+@property (nonatomic, assign) BOOL partying;
+@property (nonatomic, assign) BOOL immortal;
 @end
 
-@interface RBSProcessIdentity : NSObject
-@property (nonatomic, copy, readonly) NSString *embeddedApplicationIdentifier;
-@property (nonatomic, copy, readonly) RBSProcessIdentifier *hostIdentifier;
-+ (id)identityForEmbeddedApplicationIdentifier:(NSString *)applicationIdentifier;
-@end
+
 
 @interface RBLaunchdJob : NSObject
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
@@ -35,19 +36,20 @@
 @end
 
 @interface RBProcess : NSObject
-@property (nonatomic, assign) BOOL immortal;
-
 @property (nonatomic, readonly) RBLaunchdJob *job;
 @property (nonatomic, readonly) id<RBBundleProperties> bundleProperties;
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
+@property (nonatomic, copy, readonly) RBSProcessHandle *handle;
 
 - (int)rbs_pid;
 @end
 
 @interface RBProcessManager : NSObject
 @property (nonatomic, retain) KPCenter *kp_center_in;
-@property (nonatomic, retain) RBProcess *immortalProcess;
+@property (nonatomic, retain) NSString *immortalProcessBundleID;
+@property (nonatomic, retain) NSString *nowPlayingBundleID;
 - (RBProcess *)processForIdentity:(RBSProcessIdentity *)identity;
+- (RBProcess *)processForBundleID:(NSString *)bundleID;
 @end
 
 

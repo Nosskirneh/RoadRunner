@@ -6,16 +6,18 @@
 #import "SpringBoard.h"
 
 #define kSBSpringBoardDidLaunchNotification "SBSpringBoardDidLaunchNotification"
+#define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 #define kKilledByAppSwitcher 1
 
-FBApplicationProcess *getProcessForPID(int pid) {
+
+static inline FBApplicationProcess *getProcessForPID(int pid) {
     return [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
 }
 
 @implementation KPManager {
     KPCenter *_center_in;
     KPCenter *_center_out;
-    NSString *_nowPlayingBundleID;
+    NSMutableSet *_immortalApps;
 }
 
 - (id)init {
@@ -28,6 +30,32 @@ FBApplicationProcess *getProcessForPID(int pid) {
         ^(int _) {
             notify_cancel(token);
 
+            _immortalApps = [NSMutableSet new];
+
+            RBSConnection *connection = [%c(RBSConnection) sharedInstance];
+            NSMutableDictionary *states = MSHookIvar<NSMutableDictionary *>(connection, "_stateByIdentity");
+            for (RBSProcessIdentity *identity in states) {
+                RBSProcessState *state = states[identity];
+
+                if (state.immortal) {
+                    NSString *bundleID = identity.embeddedApplicationIdentifier;
+                    int pid = state.process.pid;
+
+                    [_immortalApps addObject:bundleID];
+
+                    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
+                    dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+                        SBApplication *app = [self reattachImmortalProcess:bundleID
+                                                                       PID:pid];
+
+                        if (state.partying) {
+                            [self restoreMediaApp:app PID:pid];
+                            _immortalPartyingBundleID = bundleID;
+                        }
+                    });
+                }
+            }
+
             _center_in = [KPCenter centerNamed:KP_IDENTIFIER_SB];
             [_center_in addTarget:self action:PREVENTED_APP_SHUTDOWN_PID_SELECTOR];
 
@@ -37,13 +65,14 @@ FBApplicationProcess *getProcessForPID(int pid) {
                                                        object:nil];
 
             _center_out = [KPCenter centerNamed:KP_IDENTIFIER_RB];
-            [_center_out callExternalMethod:SB_LOADED
-                              withArguments:nil
-                                 completion:nil];
         }
     );
 
     return self;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
@@ -54,12 +83,9 @@ FBApplicationProcess *getProcessForPID(int pid) {
     if (pid) {
         int p = [pid intValue];
         FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:p];
-        _nowPlayingBundleID = app.bundleIdentifier;
         data = @{
-            kApp : _nowPlayingBundleID
+            kApp : app.bundleIdentifier
         };
-    } else {
-        _nowPlayingBundleID = nil;
     }
 
     [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
@@ -67,32 +93,44 @@ FBApplicationProcess *getProcessForPID(int pid) {
                          completion:nil];
 }
 
-/* This is called from RunningBoard when SpringBoard loads
-   if at least one app has been immortal. */
-- (void)preventedAppShutdown:(NSDictionary *)data {
-    _immortalBundleID = data[kBundleID];
-    _immortalPID = [data[kPID] intValue];
-    [self reattachImmortalProcess];
+- (void)restoreMediaApp:(SBApplication *)app PID:(int)pid {
+    FBApplicationProcess *process = getProcessForPID(pid);
+    [process setNowPlayingWithAudio:YES];
 
-    // SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
-    // id aa = mediaController.nowPlayingApplication;
-    // int pid = mediaController.nowPlayingProcessPID;
-    // log(@"sb loaded: %@, pid: %d", aa, pid);
+    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
+    dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+
+        // Restore MediaRemote
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
+                              object:nil
+                              userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey: @(pid)}];
+        [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification
+                              object:nil
+                            userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingUserInfoKey: @(YES)}];
+
+
+        // Restore SBMediaController
+        SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
+        MSHookIvar<SBApplication *>(mediaController, "_lastNowPlayingApplication") = app;
+        mediaController.nowPlayingProcessPID = pid;
+
+        [center postNotificationName:kSBMediaNowPlayingAppChangedNotification
+                              object:mediaController];
+    });
 }
 
 /* Reattach a process with a specific bundleID and pid */
-- (void)reattachImmortalProcess {
-    FBApplicationProcess *process = getProcessForPID(_immortalPID);
+- (SBApplication *)reattachImmortalProcess:(NSString *)bundleID PID:(int)pid {
+    FBApplicationProcess *process = getProcessForPID(pid);
     if (!process)
-        return;
+        return nil;
 
-    [process setNowPlayingWithAudio:YES];
-
-    SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:_immortalBundleID];
+    SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
     [app _processWillLaunch:process];
     [app _processDidLaunch:process];
 
-    FBProcessState *processState = [[%c(FBProcessState) alloc] initWithPid:_immortalPID];
+    FBProcessState *processState = [[%c(FBProcessState) alloc] initWithPid:pid];
     [processState setVisibility:Background];
     [processState setTaskState:Background];
 
@@ -107,7 +145,7 @@ FBApplicationProcess *getProcessForPID(int pid) {
     [app _setInternalProcessState:sbProcessSate];
 
     SpringBoard *springBoard = (SpringBoard *)[UIApplication sharedApplication];
-    [springBoard launchApplicationWithIdentifier:_immortalBundleID suspended:YES];
+    [springBoard launchApplicationWithIdentifier:bundleID suspended:YES];
 
     dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
     dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
@@ -130,14 +168,19 @@ FBApplicationProcess *getProcessForPID(int pid) {
                       withTransitionContext:nil
                                  completion:nil];
     });
+
+    return app;
 }
 
-- (void)killImmortalApp {
-    FBApplicationProcess *process = getProcessForPID(_immortalPID);
+- (void)killImmortalPID:(int)pid {
+    FBApplicationProcess *process = getProcessForPID(pid);
     [process killForReason:kKilledByAppSwitcher andReport:NO withDescription:nil];
 
-    _immortalBundleID = nil;
-    _immortalPID = 0;
+    NSString *bundleID = process.bundleIdentifier;
+    [_immortalApps removeObject:bundleID];
+    if ([bundleID isEqualToString:_immortalPartyingBundleID]) {
+        _immortalPartyingBundleID = nil;
+    }
 }
 
 @end

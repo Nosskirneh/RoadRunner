@@ -1,5 +1,4 @@
 @interface KPManager : NSObject
-@property (nonatomic, retain) NSString *immortalBundleID;
-@property (nonatomic, assign) int immortalPID;
-- (void)killImmortalApp;
+@property (nonatomic, retain, readonly) NSString *immortalPartyingBundleID;
+- (void)killImmortalPID:(int)pid;
 @end

@@ -3,19 +3,12 @@
 #import "RunningBoard.h"
 #import <notify.h>
 
-static inline NSString *getBundleIDForProcess(RBProcess *process) {
-    return process.identity.embeddedApplicationIdentifier;
-}
-
-static inline int getPIDForProcess(RBProcess *process) {
-    return [process rbs_pid];
-}
-
 
 %hook RBProcessManager
 
 %property (nonatomic, retain) KPCenter *kp_center_in;
-%property (nonatomic, retain) RBProcess *immortalProcess;
+%property (nonatomic, retain) NSString *immortalProcessBundleID;
+%property (nonatomic, retain) NSString *nowPlayingBundleID;
 
 - (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
                    entitlementManager:(id)entitlementManager
@@ -25,7 +18,6 @@ static inline int getPIDForProcess(RBProcess *process) {
 
     KPCenter *center = [KPCenter centerNamed:KP_IDENTIFIER_RB];
     [center addTarget:self action:NOW_PLAYING_APP_CHANGED_SELECTOR];
-    [center addTarget:self action:SB_LOADED];
     self.kp_center_in = center;
 
     // notify_register_dispatch(kSettingsChanged,
@@ -40,34 +32,37 @@ static inline int getPIDForProcess(RBProcess *process) {
 }
 
 %new
-- (void)springBoardLoaded:(NSDictionary *)data {
-    // Send information about which PID was prevented from closing
-    RBProcess *process = self.immortalProcess;
-    if (!process)
-        return;
-
-    NSDictionary *processData = @{
-        kBundleID : getBundleIDForProcess(process),
-        kPID : @(getPIDForProcess(process))
-    };
-
-    KPCenter *center = [KPCenter centerNamed:KP_IDENTIFIER_SB];
-    [center callExternalMethod:PREVENTED_APP_SHUTDOWN_PID_SELECTOR
-                 withArguments:processData
-                    completion:nil];
+- (RBProcess *)processForBundleID:(NSString *)bundleID {
+    RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:bundleID];
+    return [self processForIdentity:identity];
 }
 
 %new
 - (void)nowPlayingAppChanged:(NSDictionary *)data {
     if (data) {
-        NSString *nowPlayingBundleID = data[kApp];
-        RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:nowPlayingBundleID];
-        self.immortalProcess = [self processForIdentity:identity];
-        self.immortalProcess.immortal = YES;
+        self.nowPlayingBundleID = data[kApp];
+        RBProcess *partyProcess = [self processForBundleID:self.nowPlayingBundleID];
+        partyProcess.handle.partying = YES;
     } else {
-        self.immortalProcess.immortal = NO;
-        self.immortalProcess = nil;
+        RBProcess *partyProcess = [self processForBundleID:self.nowPlayingBundleID];
+        partyProcess.handle.partying = NO;
+        self.nowPlayingBundleID = nil;
     }
+}
+
+%end
+
+
+%hook RBSProcessHandle
+
+%property (nonatomic, assign) BOOL partying;
+%property (nonatomic, assign) BOOL immortal;
+
+- (id)initWithInstance:(id)arg1 lifePort:(id)arg2 bundleData:(id)arg3 reported:(BOOL)arg4 {
+    self = %orig;
+    self.partying = NO;
+    self.immortal = NO;
+    return self;
 }
 
 %end
@@ -75,13 +70,25 @@ static inline int getPIDForProcess(RBProcess *process) {
 
 %hook RBProcess
 
-%property (nonatomic, assign) BOOL immortal;
-
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
-    if (self.immortal) {
+    if (self.handle.partying) {
+        self.handle.immortal = YES;
         return YES;
     }
     return %orig;
+}
+
+%end
+
+
+%hook RBSProcessState
+
+- (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
+    %orig;
+
+    RBSProcessHandle *handle = self.process;
+    [coder encodeBool:handle.partying forKey:kPartyingProcess];
+    [coder encodeBool:handle.immortal forKey:kImmortalProcess];
 }
 
 %end
