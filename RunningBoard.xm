@@ -90,7 +90,7 @@
 
 
 %ctor {
-    if (%c(RBProcessManager) == nil || !isEnabled())
+    if (%c(RBProcessManager) == nil || !isEnabled())
         return;
 
     %init;
