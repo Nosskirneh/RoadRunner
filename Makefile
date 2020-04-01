@@ -8,7 +8,7 @@ endif
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = KeepPartying
-$(TWEAK_NAME)_FILES = Tweak.xm KPManager.xm RunningBoard.xm KPCenter.m
+$(TWEAK_NAME)_FILES = Tweak.xm KPManager.xm RunningBoard.xm KPCenter.m SettingsKeys.m
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = MediaRemote
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 
@@ -18,7 +18,13 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 ifdef SB_ONLY
 after-install::
 	install.exec "killall -9 SpringBoard"
+else ifdef PREFS_ONLY
+after-install::
+		install.exec "killall -9 Preferences"
 else
 after-install::
 		install.exec "killall -9 runningboardd backboardd"
 endif
+
+SUBPROJECTS += preferences
+include $(THEOS_MAKE_PATH)/aggregate.mk
