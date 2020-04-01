@@ -1,7 +1,7 @@
 #import "Common.h"
 #import "KPCenter.h"
 #import "RunningBoard.h"
-#import <notify.h>
+#import "SettingsKeys.h"
 
 
 %hook RBProcessManager
@@ -19,14 +19,6 @@
     KPCenter *center = [KPCenter centerNamed:KP_IDENTIFIER_RB];
     [center addTarget:self action:NOW_PLAYING_APP_CHANGED_SELECTOR];
     self.kp_center_in = center;
-
-    // notify_register_dispatch(kSettingsChanged,
-    //     &_notifyTokenForSettingsChanged,
-    //     dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
-    //     ^(int _) {
-
-    //     }
-    // );
 
     return self;
 }
