@@ -86,15 +86,17 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     NSDictionary *info = notification.userInfo;
-    NSNumber *pid = info[(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey];
     NSDictionary *data;
+    NSNumber *pid = info[(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey];
 
     if (pid) {
         int p = [pid intValue];
         FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:p];
-        data = @{
-            kApp : app.bundleIdentifier
-        };
+        if (app) {
+            data = @{
+                kApp : app.bundleIdentifier
+            };
+        }
     }
 
     [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
