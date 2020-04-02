@@ -36,22 +36,25 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
             for (RBSProcessIdentity *identity in states) {
                 RBSProcessState *state = states[identity];
 
+                int pid = state.process.pid;
                 if (state.immortal) {
                     NSString *bundleID = identity.embeddedApplicationIdentifier;
-                    int pid = state.process.pid;
 
                     // [_immortalApps addObject:bundleID];
 
-                    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
-                    dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
-                        SBApplication *app = [self reattachImmortalProcess:bundleID
-                                                                       PID:pid];
+                    if (state.partying) {
+                        dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
+                        dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+                            SBApplication *app = [self reattachImmortalProcess:bundleID
+                                                                           PID:pid];
 
-                        if (state.partying) {
                             [self restoreMediaApp:app PID:pid];
                             _immortalPartyingBundleID = bundleID;
-                        }
-                    });
+                        });
+                    } else {
+                        // Kill any non-partying apps
+                        [self killImmortalPID:pid];
+                    }
                 }
             }
 
