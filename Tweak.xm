@@ -17,8 +17,7 @@ KPManager *manager;
     NSString *bundleID = [appLayout allItems][0].bundleIdentifier;
     RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:bundleID];
 
-    RBSConnection *connection = [%c(RBSConnection) sharedInstance];
-    NSMutableDictionary *states = MSHookIvar<NSMutableDictionary *>(connection, "_stateByIdentity");
+    NSDictionary *states = [manager getAllProcessStates];
     RBSProcessState *state = states[identity];
 
     if (state.immortal) {

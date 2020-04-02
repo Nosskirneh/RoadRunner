@@ -4,4 +4,5 @@
 - (void)killImmortalPID:(int)pid;
 - (void)setTrialEnded;
 - (void)setup;
+- (NSDictionary *)getAllProcessStates;
 @end

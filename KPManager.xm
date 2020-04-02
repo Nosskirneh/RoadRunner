@@ -30,8 +30,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
             _immortalApps = [NSMutableSet new];
 
-            RBSConnection *connection = [%c(RBSConnection) sharedInstance];
-            NSMutableDictionary *states = MSHookIvar<NSMutableDictionary *>(connection, "_stateByIdentity");
+            NSDictionary *states = [self getAllProcessStates];
             for (RBSProcessIdentity *identity in states) {
                 RBSProcessState *state = states[identity];
 
@@ -184,6 +183,12 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     if ([bundleID isEqualToString:_immortalPartyingBundleID]) {
         _immortalPartyingBundleID = nil;
     }
+}
+
+
+- (NSDictionary *)getAllProcessStates {
+    RBSConnection *connection = [%c(RBSConnection) sharedInstance];
+    return [MSHookIvar<NSDictionary *>(connection, "_stateByIdentity") copy];
 }
 
 @end
