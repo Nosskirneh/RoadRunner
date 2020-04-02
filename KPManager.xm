@@ -58,12 +58,12 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
             _center_in = [KPCenter centerNamed:KP_IDENTIFIER_SB];
             [_center_in addTarget:self action:PREVENTED_APP_SHUTDOWN_PID_SELECTOR];
 
+            _center_out = [KPCenter centerNamed:KP_IDENTIFIER_RB];
+
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(nowPlayingAppChanged:)
                                                          name:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
                                                        object:nil];
-
-            _center_out = [KPCenter centerNamed:KP_IDENTIFIER_RB];
         }
     );
 }
