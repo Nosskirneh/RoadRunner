@@ -65,7 +65,7 @@
 %hook RBProcess
 
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
-    if (self.handle.partying) {
+    if (self.handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) {
         self.handle.immortal = YES;
         return YES;
     }

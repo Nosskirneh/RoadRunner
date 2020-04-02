@@ -52,6 +52,8 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                             [self restoreMediaApp:app PID:pid];
                             _immortalPartyingBundleID = bundleID;
                         });
+                    } else if (process.hostProcess && process.hostProcess.currentState.partying) {
+                        [self reattachExtensionProcess:pid];
                     } else {
                         // Kill any non-partying apps
                         [self killImmortalPID:pid];
@@ -59,8 +61,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                 } else if (process.hostProcess && process.hostProcess.currentState.immortal) {
                     /* Reconnect extension processes to their host processes
                        (for example WebKit playing inside of MobileSafari). */
-                    BSProcessHandle *handle = [%c(BSProcessHandle) processHandleForPID:pid];
-                    [[%c(FBProcessManager) sharedInstance] registerProcessForHandle:handle];
+                    [self reattachExtensionProcess:pid];
                 }
             }
 
@@ -75,6 +76,11 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                                                        object:nil];
         }
     );
+}
+
+- (void)reattachExtensionProcess:(int)pid {
+    BSProcessHandle *handle = [%c(BSProcessHandle) processHandleForPID:pid];
+    [[%c(FBProcessManager) sharedInstance] registerProcessForHandle:handle];
 }
 
 - (void)setTrialEnded {

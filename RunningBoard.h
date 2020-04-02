@@ -35,9 +35,12 @@
 @property (nonatomic, copy, readonly) NSString *bundleIdentifier;
 @end
 
+@class RBProcess;
+
 @interface RBProcess : NSObject
 @property (nonatomic, readonly) RBLaunchdJob *job;
 @property (nonatomic, readonly) id<RBBundleProperties> bundleProperties;
+@property (nonatomic, readonly) RBProcess *hostProcess;
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
 @property (nonatomic, copy, readonly) RBSProcessHandle *handle;
 
