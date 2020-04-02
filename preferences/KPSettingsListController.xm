@@ -24,7 +24,8 @@
 @implementation KPSettingsListController
 
 - (void)respring {
-    killProcess("runningboardd SpringBoard");
+    killProcess("runningboardd");
+    killProcess("SpringBoard");
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
