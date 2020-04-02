@@ -36,7 +36,8 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
             for (RBSProcessIdentity *identity in states) {
                 RBSProcessState *state = states[identity];
 
-                int pid = state.process.pid;
+                RBSProcessHandle *process = state.process;
+                int pid = process.pid;
                 if (state.immortal) {
                     NSString *bundleID = identity.embeddedApplicationIdentifier;
 
@@ -55,6 +56,11 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                         // Kill any non-partying apps
                         [self killImmortalPID:pid];
                     }
+                } else if (process.hostProcess && process.hostProcess.currentState.immortal) {
+                    /* Reconnect extension processes to their host processes
+                       (for example WebKit playing inside of MobileSafari). */
+                    BSProcessHandle *handle = [%c(BSProcessHandle) processHandleForPID:pid];
+                    [[%c(FBProcessManager) sharedInstance] registerProcessForHandle:handle];
                 }
             }
 
@@ -86,17 +92,27 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     NSDictionary *info = notification.userInfo;
-    NSDictionary *data;
     NSNumber *pid = info[(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey];
+    NSString *bundleID;
 
     if (pid) {
         int p = [pid intValue];
         FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:p];
         if (app) {
-            data = @{
-                kApp : app.bundleIdentifier
-            };
+            bundleID = app.bundleIdentifier;
+        } else {
+            FBProcess *process = [[%c(FBProcessManager) sharedInstance] processForPID:p];
+            if ([process isKindOfClass:%c(FBExtensionProcess)]) {
+                bundleID = ((FBExtensionProcess *)process).hostProcess.bundleIdentifier;
+            }
         }
+    }
+
+    NSDictionary *data;
+    if (bundleID) {
+        data = @{
+            kApp : bundleID
+        };
     }
 
     [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR

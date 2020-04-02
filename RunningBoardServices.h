@@ -17,8 +17,11 @@
 @end
 
 
+@class RBSProcessState, RBSProcessHandle;
 
 @interface RBSProcessHandle : NSObject
+@property (nonatomic, readonly) RBSProcessState *currentState;
+@property (nonatomic, readonly) RBSProcessHandle *hostProcess;
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
 @property (nonatomic, readonly) int pid;
 @end

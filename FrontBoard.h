@@ -1,5 +1,18 @@
-@interface FBApplicationProcess : NSObject
+#import "BaseBoard.h"
+#import "RunningBoardServices.h"
+
+@interface FBProcess : NSObject
 @property (nonatomic, copy, readonly) NSString *bundleIdentifier;
+@end
+
+@interface FBExtensionProcess : FBProcess
+@property (nonatomic, readonly) FBProcess *hostProcess;
+- (id)initWithHandle:(BSProcessHandle *)handle
+            identity:(RBSProcessIdentity *)identity
+             hostPID:(int)hostPID;
+@end
+
+@interface FBApplicationProcess : FBProcess
 @property (assign, getter=isNowPlayingWithAudio, nonatomic) BOOL nowPlayingWithAudio;
 - (void)killForReason:(long long)reason
             andReport:(BOOL)report
@@ -9,6 +22,8 @@
 @interface FBProcessManager : NSObject
 + (id)sharedInstance;
 - (id)applicationProcessForPID:(int)pid;
+- (id)processForPID:(int)pid;
+- (id)registerProcessForHandle:(BSProcessHandle *)handle;
 @end
 
 
