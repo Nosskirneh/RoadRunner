@@ -47,26 +47,16 @@
 %end
 
 
-%hook RBSProcessHandle
-
-%property (nonatomic, assign) BOOL partying;
-%property (nonatomic, assign) BOOL immortal;
-
-- (id)initWithInstance:(id)arg1 lifePort:(id)arg2 bundleData:(id)arg3 reported:(BOOL)arg4 {
-    self = %orig;
-    self.partying = NO;
-    self.immortal = NO;
-    return self;
-}
-
-%end
-
-
 %hook RBProcess
 
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
-    if (self.handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) {
-        self.handle.immortal = YES;
+    RBSProcessHandle *handle = self.handle;
+
+    log(@"terminateWithContext: %@ – partying: %d, immortal: %d",
+        self.identity.embeddedApplicationIdentifier, handle.partying, handle.immortal);
+
+    if (handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) {
+        handle.immortal = YES;
         return YES;
     }
     return %orig;
@@ -75,6 +65,39 @@
 %end
 
 
+/* Used to store properties within RunningBoard */
+%hook RBSProcessHandle
+
+%property (nonatomic, assign) BOOL partying;
+%property (nonatomic, assign) BOOL immortal;
+
+- (id)initWithInstance:(id)instance
+              lifePort:(id)lifePort
+            bundleData:(id)bundleData
+              reported:(BOOL)reported {
+    self = %orig;
+    self.partying = NO;
+    self.immortal = NO;
+    return self;
+}
+
+- (id)initWithBSXPCCoder:(BSXPCCoder *)coder {
+    self = %orig;
+
+    self.partying = [coder decodeBoolForKey:kPartyingProcess];
+    self.immortal = [coder decodeBoolForKey:kImmortalProcess];
+
+    return self;
+}
+
+%end
+
+
+/* Used to transfer information to SpringBoard.
+   Why SpringBoard uses the RBSProcessState and not RunningBoard is
+   because the state is always updated to SpringBoard whereas the
+   process handler is not. The correct information doesn't get
+   propagated. */
 %hook RBSProcessState
 
 - (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
