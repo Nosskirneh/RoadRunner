@@ -7,9 +7,6 @@
 
 @interface FBExtensionProcess : FBProcess
 @property (nonatomic, readonly) FBProcess *hostProcess;
-- (id)initWithHandle:(BSProcessHandle *)handle
-            identity:(RBSProcessIdentity *)identity
-             hostPID:(int)hostPID;
 @end
 
 @interface FBApplicationProcess : FBProcess

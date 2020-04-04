@@ -7,7 +7,6 @@
 %hook RBProcessManager
 
 %property (nonatomic, retain) KPCenter *kp_center_in;
-%property (nonatomic, retain) NSString *immortalProcessBundleID;
 %property (nonatomic, retain) NSString *nowPlayingBundleID;
 
 /* Setup communication channels from and to SpringBoard */
