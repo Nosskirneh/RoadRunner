@@ -17,9 +17,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 @implementation KPManager {
     KPCenter *_center_in;
     KPCenter *_center_out;
-    /* If support for non-media apps is wanted, this needs to
-       be used to track all immortal apps. */
-    // NSMutableSet *_immortalApps;
 }
 
 - (void)setup {
@@ -29,8 +26,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
         dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
         ^(int _) {
             notify_cancel(token);
-
-            // _immortalApps = [NSMutableSet new];
 
             /* Go through all existing processes.
                Reattach any media playing process, reattach any extension
@@ -43,13 +38,11 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                 int pid = process.pid;
 
                 if (state.immortal) {
-                    NSString *bundleID = identity.embeddedApplicationIdentifier;
-
-                    // [_immortalApps addObject:bundleID];
 
                     if (state.partying) {
                         dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
                         dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+                            NSString *bundleID = identity.embeddedApplicationIdentifier;
                             SBApplication *app = [self reattachImmortalProcess:bundleID
                                                                            PID:pid];
 
@@ -221,7 +214,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     [process killForReason:kKilledByAppSwitcher andReport:NO withDescription:nil];
 
     NSString *bundleID = process.bundleIdentifier;
-    // [_immortalApps removeObject:bundleID];
     if ([bundleID isEqualToString:_immortalPartyingBundleID]) {
         _immortalPartyingBundleID = nil;
     }
