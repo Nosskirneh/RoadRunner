@@ -112,7 +112,7 @@ static inline void initTrial() {
 
 
 %ctor {
-    if (%c(SpringBoard) || %c(FBProcessManager)) {
+    if (%c(SpringBoard)) {
         if (!isEnabled())
             return;
 

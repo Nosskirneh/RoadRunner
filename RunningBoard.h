@@ -7,7 +7,6 @@
 #import "RunningBoardServices.h"
 
 
-
 @interface RBSProcessHandle (RB)
 @property (nonatomic, assign) BOOL partying;
 @property (nonatomic, assign) BOOL immortal;
