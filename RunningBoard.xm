@@ -52,9 +52,6 @@
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
     RBSProcessHandle *handle = self.handle;
 
-    log(@"terminateWithContext: %@ – partying: %d, immortal: %d",
-        self.identity.embeddedApplicationIdentifier, handle.partying, handle.immortal);
-
     if (handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) {
         handle.immortal = YES;
         return YES;
@@ -96,8 +93,8 @@
 /* Used to transfer information to SpringBoard.
    Why SpringBoard uses the RBSProcessState and not RunningBoard is
    because the state is always updated to SpringBoard whereas the
-   process handler is not. The correct information doesn't get
-   propagated. */
+   process handle is not. The required information doesn't get
+   propagated if using the latter. */
 %hook RBSProcessState
 
 - (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {

@@ -35,9 +35,9 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
             NSDictionary *states = [self getAllProcessStates];
             for (RBSProcessIdentity *identity in states) {
                 RBSProcessState *state = states[identity];
-
                 RBSProcessHandle *process = state.process;
                 int pid = process.pid;
+
                 if (state.immortal) {
                     NSString *bundleID = identity.embeddedApplicationIdentifier;
 
