@@ -136,10 +136,16 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
                               object:nil
-                              userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey: @(pid)}];
+                            userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey: @(pid)}];
         [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification
                               object:nil
                             userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingUserInfoKey: @(YES)}];
+
+        MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef info) {
+            [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDidChangeNotification
+                                  object:nil
+                                userInfo:(__bridge NSDictionary *)info];
+        });
 
         // Restore SBMediaController
         SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
