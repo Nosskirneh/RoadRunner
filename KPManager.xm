@@ -32,6 +32,10 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
             // _immortalApps = [NSMutableSet new];
 
+            /* Go through all existing processes.
+               Reattach any media playing process, reattach any extension
+               (WebKit) process to its host process and kill any immortal
+               app not playing media anymore. */
             NSDictionary *states = [self getAllProcessStates];
             for (RBSProcessIdentity *identity in states) {
                 RBSProcessState *state = states[identity];
@@ -65,9 +69,9 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                 }
             }
 
+            /* Setup communication channels to RunningBoard and
+               subscribe to now playing app changes. */
             _center_in = [KPCenter centerNamed:KP_IDENTIFIER_SB];
-            [_center_in addTarget:self action:PREVENTED_APP_SHUTDOWN_PID_SELECTOR];
-
             _center_out = [KPCenter centerNamed:KP_IDENTIFIER_RB];
 
             [[NSNotificationCenter defaultCenter] addObserver:self
@@ -83,6 +87,8 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     [[%c(FBProcessManager) sharedInstance] registerProcessForHandle:handle];
 }
 
+/* Unsubscribe to notifications and tell RunningBoard to
+   mark the any current now playing process as not playing. */
 - (void)setTrialEnded {
     _trialEnded = YES;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -157,7 +163,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     });
 }
 
-/* Reattach a process with a specific bundleID and pid */
+/* Reattach a process with a specific bundleID and PID. */
 - (SBApplication *)reattachImmortalProcess:(NSString *)bundleID PID:(int)pid {
     FBApplicationProcess *process = getProcessForPID(pid);
     if (!process)
@@ -209,6 +215,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     return app;
 }
 
+/* Kills a process as if the user quit it from the app switcher. */
 - (void)killImmortalPID:(int)pid {
     FBApplicationProcess *process = getProcessForPID(pid);
     [process killForReason:kKilledByAppSwitcher andReport:NO withDescription:nil];

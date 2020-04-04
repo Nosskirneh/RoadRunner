@@ -10,6 +10,7 @@
 %property (nonatomic, retain) NSString *immortalProcessBundleID;
 %property (nonatomic, retain) NSString *nowPlayingBundleID;
 
+/* Setup communication channels from and to SpringBoard */
 - (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
                    entitlementManager:(id)entitlementManager
                    jetsamBandProvider:(id)jetsamBandProvider
@@ -29,8 +30,10 @@
     return [self processForIdentity:identity];
 }
 
+/* Receive information about now playing app changes. */
 %new
 - (void)nowPlayingAppChanged:(NSDictionary *)data {
+    // Clear any previous playing process as not playing
     if (self.nowPlayingBundleID) {
         RBProcess *previousPartyProcess = [self processForBundleID:self.nowPlayingBundleID];
         previousPartyProcess.handle.partying = NO;
@@ -47,6 +50,7 @@
 %end
 
 
+/* Exclude the now playing process from being killed. */
 %hook RBProcess
 
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
@@ -62,7 +66,7 @@
 %end
 
 
-/* Used to store properties within RunningBoard */
+/* Used to store properties within RunningBoard. */
 %hook RBSProcessHandle
 
 %property (nonatomic, assign) BOOL partying;
@@ -73,6 +77,7 @@
             bundleData:(id)bundleData
               reported:(BOOL)reported {
     self = %orig;
+    // These have to be initialized to NO for some reason
     self.partying = NO;
     self.immortal = NO;
     return self;
@@ -90,9 +95,9 @@
 %end
 
 
-/* Used to transfer information to SpringBoard.
+/* Used to transfer information to SpringBoard as binary data.
    Why SpringBoard uses the RBSProcessState and not RunningBoard is
-   because the state is always updated to SpringBoard whereas the
+   because updated states are always sent to SpringBoard whereas the
    process handle is not. The required information doesn't get
    propagated if using the latter. */
 %hook RBSProcessState
@@ -113,5 +118,6 @@
     if (%c(RBProcessManager) == nil || !isEnabled())
         return;
 
+    // No need to check license here as SpringBoard checks that
     %init;
 }

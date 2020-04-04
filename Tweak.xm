@@ -9,6 +9,9 @@
 KPManager *manager;
 
 
+/* Any previously excluded process needs to be manually
+   killed when the user wants to. I suspect this is
+   because the process is no longer being tracked. */
 %hook SBFluidSwitcherViewController
 
 - (void)killContainer:(SBReusableSnapshotItemContainer *)container
@@ -30,7 +33,8 @@ KPManager *manager;
 %end
 
 
-
+/* Overriding this solves issues where iOS wouldn't
+   consider the reattached process as playing media. */
 %hook SBMediaController
 
 + (BOOL)applicationCanBeConsideredNowPlaying:(SBApplication *)app {
@@ -44,6 +48,7 @@ KPManager *manager;
 %end
 
 
+/* Transfer the binary data back to our properties. */
 %hook RBSProcessState
 
 %property (nonatomic, assign) BOOL partying;
