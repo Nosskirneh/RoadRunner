@@ -97,7 +97,7 @@
 }
 
 - (void)sendEmail {
-    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=KeepPartying%202"]);
+    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=KeepPartying"]);
 }
 
 - (void)followTwitter {
@@ -158,16 +158,16 @@
         [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
         [_label setAdjustsFontSizeToFitWidth:YES];
         [_label setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:48]];
-        
+
         NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"KeepPartying"];
-        
+
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];
         [_label setBackgroundColor:[UIColor clearColor]];
-        
+
         [self addSubview:_label];
         [self setBackgroundColor:[UIColor clearColor]];
-        
+
         // Setup constraints
         NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:_label
                                                                           attribute:NSLayoutAttributeLeft
