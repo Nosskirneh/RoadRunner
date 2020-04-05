@@ -10,7 +10,7 @@
 #define kDefault @"default"
 #define kCell @"cell"
 
-@interface KPSettingsListController : PSListController {
+@interface RRSettingsListController : PSListController {
     UIWindow *settingsView;
 }
 - (void)setEnabled:(BOOL)enabled forSpecifier:(PSSpecifier *)specifier;

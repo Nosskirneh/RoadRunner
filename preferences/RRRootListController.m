@@ -1,4 +1,4 @@
-#import "KPSettingsListController.h"
+#import "RRSettingsListController.h"
 #import <Preferences/Preferences.h>
 #import <UIKit/UITableViewLabel.h>
 #import "../DRMOptions.mm"
@@ -10,14 +10,14 @@
 
 #define kPostNotification @"PostNotification"
 
-@interface KPRootListController : KPSettingsListController <PFStatusBarAlertDelegate, DRMDelegate>
+@interface RRRootListController : RRSettingsListController <PFStatusBarAlertDelegate, DRMDelegate>
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
 @property (nonatomic, weak) UIAlertAction *okAction;
 @property (nonatomic, weak) NSString *okRegex;
 @property (nonatomic, strong) UIAlertController *giveawayAlertController;
 @end
 
-@implementation KPRootListController
+@implementation RRRootListController
 
 - (id)init {
     if (self == [super init]) {
@@ -97,7 +97,7 @@
 }
 
 - (void)sendEmail {
-    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=KeepPartying"]);
+    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=RoadRunner"]);
 }
 
 - (void)followTwitter {
@@ -159,7 +159,7 @@
         [_label setAdjustsFontSizeToFitWidth:YES];
         [_label setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:48]];
 
-        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"KeepPartying"];
+        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"RoadRunner"];
 
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];
@@ -210,11 +210,11 @@
 @end
 
 
-@interface KPColorButtonCell : PSTableCell
+@interface RRColorButtonCell : PSTableCell
 @end
 
 
-@implementation KPColorButtonCell
+@implementation RRColorButtonCell
 
 - (void)layoutSubviews {
     [super layoutSubviews];

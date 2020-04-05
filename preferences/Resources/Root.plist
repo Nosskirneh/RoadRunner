@@ -48,7 +48,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>cellClass</key>
-            <string>KPColorButtonCell</string>
+            <string>RRColorButtonCell</string>
             <key>action</key>
             <string>myTweaks</string>
             <key>label</key>
@@ -58,7 +58,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>cellClass</key>
-            <string>KPColorButtonCell</string>
+            <string>RRColorButtonCell</string>
             <key>action</key>
             <string>followTwitter</string>
             <key>label</key>
@@ -68,7 +68,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>cellClass</key>
-            <string>KPColorButtonCell</string>
+            <string>RRColorButtonCell</string>
             <key>action</key>
             <string>iconCredits</string>
             <key>label</key>
@@ -78,7 +78,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>cellClass</key>
-            <string>KPColorButtonCell</string>
+            <string>RRColorButtonCell</string>
             <key>action</key>
             <string>sendEmail</string>
             <key>label</key>

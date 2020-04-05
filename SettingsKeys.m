@@ -1,3 +1,3 @@
-const char *kSettingsChanged = "se.nosskirneh.keeppartying/preferencesChanged";
+const char *kSettingsChanged = "se.nosskirneh.roadrunner/preferencesChanged";
 
 NSString *const kEnabled = @"enabled";

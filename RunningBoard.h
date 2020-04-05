@@ -22,7 +22,7 @@
 @end
 
 @interface RBProcessManager (KeepPlaying)
-@property (nonatomic, retain) KPCenter *kp_center_in;
+@property (nonatomic, retain) RRCenter *kp_center_in;
 @property (nonatomic, retain) NSString *nowPlayingBundleID;
 - (RBProcess *)processForBundleID:(NSString *)bundleID;
 @end

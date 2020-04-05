@@ -1,12 +1,12 @@
 #import "Common.h"
-#import "KPCenter.h"
+#import "RRCenter.h"
 #import "FrontBoard.h"
 #import "SpringBoard.h"
-#import "KPManager.h"
+#import "RRManager.h"
 #import "DRMValidateOptions.mm"
 
 
-KPManager *manager;
+RRManager *manager;
 
 
 /* Any previously excluded process needs to be manually
@@ -124,7 +124,7 @@ static inline void initTrial() {
         if (fromUntrustedSource(package$bs()))
             %init(PackagePirated);
 
-        manager = [[KPManager alloc] init];
+        manager = [[RRManager alloc] init];
 
         /* License check – if no license found, present message.
            If no valid license found, do not init. */

@@ -1,4 +1,4 @@
-#import "KPCenter.h"
+#import "RRCenter.h"
 #import "FrontBoard.h"
 #import <SpringBoard/SBApplication.h>
 #import <SpringBoard/SBMediaController.h>
@@ -14,8 +14,8 @@
 
 
 @interface SpringBoard : NSObject
-@property (nonatomic, retain) KPCenter *kp_center_in;
-@property (nonatomic, retain) KPCenter *kp_center_out;
+@property (nonatomic, retain) RRCenter *kp_center_in;
+@property (nonatomic, retain) RRCenter *kp_center_out;
 - (BOOL)launchApplicationWithIdentifier:(NSString *)identifier
                               suspended:(BOOL)suspended;
 @end

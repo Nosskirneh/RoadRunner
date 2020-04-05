@@ -1,5 +1,5 @@
-Package: se.nosskirneh.keeppartying
-Name: KeepPartying
+Package: se.nosskirneh.roadrunner
+Name: RoadRunner
 Depends: mobilesubstrate
 Version: 0.1
 Architecture: iphoneos-arm

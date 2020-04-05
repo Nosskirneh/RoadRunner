@@ -7,8 +7,8 @@ endif
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = KeepPartying
-$(TWEAK_NAME)_FILES = Tweak.xm Common.xm KPManager.xm RunningBoard.xm KPCenter.m SettingsKeys.m
+TWEAK_NAME = RoadRunner
+$(TWEAK_NAME)_FILES = $(wildcard *.xm) RRCenter.m SettingsKeys.m
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = MediaRemote
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 

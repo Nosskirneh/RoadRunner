@@ -1,4 +1,4 @@
-#import "KPCenter.h"
+#import "RRCenter.h"
 
 #define THROW(...) [self _throwException:[NSString stringWithFormat:__VA_ARGS__] \
                               fromMethod:_cmd]
@@ -25,14 +25,14 @@
 
 @end
 
-@interface KPCenter ()
+@interface RRCenter ()
 - (instancetype)initWithName:(NSString *)name;
 - (void)_throwException:(NSString *)msg fromMethod:(SEL)method;
 - (NSString *)_messageNameForSelector:(SEL)selector;
 - (NSString *)_messageReplyNameForSelector:(SEL)selector uuid:(NSString *)uuid;
 @end
 
-@implementation KPCenter {
+@implementation RRCenter {
     NSDistributedNotificationCenter *_notificationCenter;
     NSMutableDictionary<NSString *, KPIPCMethod*> *_methods;
 }
@@ -132,13 +132,13 @@
 }
 
 - (NSString *)_messageNameForSelector:(SEL)selector {
-    return [NSString stringWithFormat:@"KPCenter-%@-%@",
+    return [NSString stringWithFormat:@"RRCenter-%@-%@",
             _centerName, NSStringFromSelector(selector)];
 }
 
 - (NSString *)_messageReplyNameForSelector:(SEL)selector
                                       uuid:(NSString *)uuid {
-    return [NSString stringWithFormat:@"KPCenter-%@-%@-reply-%@",
+    return [NSString stringWithFormat:@"RRCenter-%@-%@-reply-%@",
             _centerName, NSStringFromSelector(selector), uuid];
 }
 

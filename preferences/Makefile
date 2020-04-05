@@ -6,8 +6,8 @@ endif
 
 include $(THEOS)/makefiles/common.mk
 
-BUNDLE_NAME = KeepPartyingPrefs
-$(BUNDLE_NAME)_FILES = KPRootListController.m $(wildcard *.xm) $(wildcard *.m) ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m ../SettingsKeys.m
+BUNDLE_NAME = RoadRunnerPrefs
+$(BUNDLE_NAME)_FILES = RRRootListController.m $(wildcard *.xm) $(wildcard *.m) ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m ../SettingsKeys.m
 $(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 $(BUNDLE_NAME)_FRAMEWORKS = UIKit
 $(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences

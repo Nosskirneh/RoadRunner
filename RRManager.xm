@@ -1,4 +1,4 @@
-#import "KPManager.h"
+#import "RRManager.h"
 #import "Common.h"
 #import <MediaRemote/MediaRemote.h>
 #import <notify.h>
@@ -14,9 +14,9 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     return [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
 }
 
-@implementation KPManager {
-    KPCenter *_center_in;
-    KPCenter *_center_out;
+@implementation RRManager {
+    RRCenter *_center_in;
+    RRCenter *_center_out;
 }
 
 - (void)setup {
@@ -64,8 +64,8 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
             /* Setup communication channels to RunningBoard and
                subscribe to now playing app changes. */
-            _center_in = [KPCenter centerNamed:KP_IDENTIFIER_SB];
-            _center_out = [KPCenter centerNamed:KP_IDENTIFIER_RB];
+            _center_in = [RRCenter centerNamed:KP_IDENTIFIER_SB];
+            _center_out = [RRCenter centerNamed:KP_IDENTIFIER_RB];
 
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(nowPlayingAppChanged:)

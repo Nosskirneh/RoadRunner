@@ -1,4 +1,4 @@
-#import "KPSettingsListController.h"
+#import "RRSettingsListController.h"
 #import <notify.h>
 #import "../../DRM/respring.xm"
 
@@ -21,7 +21,7 @@
 #define kRequiresRespring @"requiresRespring"
 #define kRequiresAppRestart @"requiresAppRestart"
 
-@implementation KPSettingsListController
+@implementation RRSettingsListController
 
 - (void)respring {
     killProcess("runningboardd");

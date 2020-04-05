@@ -1,4 +1,4 @@
-@interface KPCenter : NSObject
+@interface RRCenter : NSObject
 @property (nonatomic, readonly) NSString *centerName;
 + (instancetype)centerNamed:(NSString *)name;
 - (void)addTarget:(id)target action:(SEL)action;
