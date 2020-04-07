@@ -1,0 +1,138 @@
+/* I don't think either of these are needed, but in case
+   they are, they are temporarily stored here. */
+
+
+
+@interface RBLaunchdJobLabel : NSObject
+@property (nonatomic, copy, readonly) NSString *embeddedApplicationIdentifier;
+@property (nonatomic, copy, readonly) NSString *stringRepresentation;
+@property (nonatomic, copy, readonly) NSString *prefix;
+@property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
+@end
+
+
+@interface RBLaunchdJob : NSObject
+@property (nonatomic, copy, readonly) RBLaunchdJobLabel *label;
+@end
+
+
+
+
+
+%hook RBLaunchdJobRegistry
+
++ (void)_queryJobsWithBlock:(/*^block*/id)arg1 {
+    %log;
+    %orig;
+}
+
++ (BOOL)_submitJob:(RBLaunchdJob *)job error:(id *)arg2 {
+    %log;
+
+    RBLaunchdJobLabel *label = job.label;
+    NSString *representation = label.stringRepresentation;
+    NSString *identifier = [representation substringFromIndex:label.prefix.length + 1];
+    log(@"identifier: %@", identifier);
+    if ([identifier hasPrefix:@"com.spotify.client"]) {
+        log(@"SPT!");
+    }
+    // log(@"adabada: %@, prefix: %@, pid: %d", .stringRepresentation, job.label.prefix);
+    return %orig;
+}
+
+- (BOOL)deleteJob:(RBLaunchdJob *)job error:(id*)arg2 {
+    %log;
+    RBLaunchdJobLabel *label = job.label;
+    NSString *representation = label.stringRepresentation;
+    NSString *identifier = [representation substringFromIndex:label.prefix.length + 1];
+    log(@"identifier: %@", identifier);
+    if ([identifier hasPrefix:@"com.spotify.client"]) {
+        log(@"SPT!");
+        // return YES;
+    }
+
+    // log(@"ID: %@, prefix: %@, pid: %d", job.label.stringRepresentation, job.label.prefix);
+
+    // if (job)
+    return %orig;
+}
+
+%end
+
+
+%hook RBAssertionManager
+
+- (void)processDidTerminate:(id)arg1 {
+    %log;
+    %orig;
+}
+
+%end
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+
+
+
+
+
+%hook FBProcessManager
+
+// - (void)_queue_addForegroundRunningProcess:(id)arg1 {
+//  %log;
+//  %orig;
+// }
+
+// - (void)_queue_addProcess:(FBApplicationProcess *)process {
+//  %log;
+//  %orig;
+
+//  // if (process.)
+// }
+
+// - (void)_queue_removeProcess:(id)arg1 withPID:(int)arg2 {
+//  %log;
+//  %orig;
+// }
+
+// - (void)_queue_removeForegroundRunningProcess:(id)arg1 {
+//  %log;
+//  %orig;
+// }
+
+// - (void)_queue_notifyObserversUsingBlock:(/*^block*/id)arg1 {
+//  %log;
+//  %orig;
+// }
+
+-(id)_serviceClientAddedWithProcessHandle:(id)arg1 {
+    %log;
+    return %orig;
+}
+
+%end
+
+
+%hook SBApplication
+
+- (void)_processWillLaunch:(id)arg1 {
+    %log;
+    %orig;
+}
+- (void)_processDidLaunch:(id)arg1 {
+    %log;
+    %orig;
+}
+
+%end
