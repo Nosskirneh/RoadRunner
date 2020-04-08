@@ -64,7 +64,7 @@
             <key>label</key>
             <string>Follow me on Twitter</string>
         </dict>
-       <!--  <dict>
+        <dict>
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>cellClass</key>
@@ -72,8 +72,8 @@
             <key>action</key>
             <string>iconCredits</string>
             <key>label</key>
-            <string>Icon by pupsicola</string>
-        </dict> -->
+            <string>Icon by @bossgfx_</string>
+        </dict>
         <dict>
             <key>cell</key>
             <string>PSButtonCell</string>

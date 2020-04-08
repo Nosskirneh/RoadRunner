@@ -116,6 +116,10 @@
     openURL([NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]);
 }
 
+- (void)iconCredits {
+    openTwitterWithUsername(@"bossgfx_");
+}
+
 - (void)safariViewControllerDidFinish:(id)arg1 {
     safariViewControllerDidFinish(self);
 }
