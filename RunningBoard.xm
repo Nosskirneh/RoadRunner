@@ -9,7 +9,7 @@
 %property (nonatomic, retain) RRCenter *kp_center_in;
 %property (nonatomic, retain) NSString *nowPlayingBundleID;
 
-/* Setup communication channels from and to SpringBoard */
+/* Setup communication channel from SpringBoard */
 - (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
                    entitlementManager:(id)entitlementManager
                    jetsamBandProvider:(id)jetsamBandProvider

@@ -15,7 +15,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 }
 
 @implementation RRManager {
-    RRCenter *_center_in;
     RRCenter *_center_out;
 }
 
@@ -62,9 +61,8 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                 }
             }
 
-            /* Setup communication channels to RunningBoard and
+            /* Setup communication channel to RunningBoard and
                subscribe to now playing app changes. */
-            _center_in = [RRCenter centerNamed:KP_IDENTIFIER_SB];
             _center_out = [RRCenter centerNamed:KP_IDENTIFIER_RB];
 
             [[NSNotificationCenter defaultCenter] addObserver:self
