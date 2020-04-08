@@ -70,6 +70,16 @@
             <key>cellClass</key>
             <string>RRColorButtonCell</string>
             <key>action</key>
+            <string>discordServer</string>
+            <key>label</key>
+            <string>Discord server</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>cellClass</key>
+            <string>RRColorButtonCell</string>
+            <key>action</key>
             <string>iconCredits</string>
             <key>label</key>
             <string>Icon by @bossgfx_</string>

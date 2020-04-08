@@ -120,6 +120,10 @@
     openTwitterWithUsername(@"bossgfx_");
 }
 
+- (void)discordServer {
+    openURL([NSURL URLWithString:@"https://discord.gg/znn8wfw"]);
+}
+
 - (void)safariViewControllerDidFinish:(id)arg1 {
     safariViewControllerDidFinish(self);
 }
