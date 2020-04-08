@@ -66,6 +66,17 @@ RRManager *manager;
 %end
 
 
+%hook RBSConnection
+
+- (void)_handleDaemonDidStart {
+    %orig;
+
+    [manager handleDaemonDidStart];
+}
+
+%end
+
+
 
 %group PackagePirated
 %hook SBCoverSheetPresentationManager

@@ -5,4 +5,5 @@
 - (void)setup;
 - (void)killImmortalPID:(int)pid;
 - (NSDictionary *)getAllProcessStates;
+- (void)handleDaemonDidStart;
 @end

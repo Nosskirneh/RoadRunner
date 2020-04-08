@@ -93,9 +93,20 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)handleDaemonDidStart {
+    MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_main_queue(), ^(int pid) {
+        if (pid > 0)
+            [self sendNowPlayingPIDInfo:@(pid)];
+    });
+}
+
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     NSDictionary *info = notification.userInfo;
     NSNumber *pid = info[(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey];
+    [self sendNowPlayingPIDInfo:pid];
+}
+
+- (void)sendNowPlayingPIDInfo:(NSNumber *)pid {
     NSString *bundleID;
 
     if (pid) {
