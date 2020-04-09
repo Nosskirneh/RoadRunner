@@ -4,6 +4,7 @@ Depends: mobilesubstrate, firmware (>= 13.0)
 Version: 0.1
 Architecture: iphoneos-arm
 Description: Keep now playing app active through resprings
+Depiction: https://henrikssonbrothers.com/cydia/repo/depictions/?p=se.nosskirneh.roadrunner
 Maintainer: Andreas Henriksson
 Author: Andreas Henriksson
 Section: Tweaks
