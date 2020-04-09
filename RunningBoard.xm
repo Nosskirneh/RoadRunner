@@ -1,5 +1,4 @@
 #import "Common.h"
-#import "RRCenter.h"
 #import "RunningBoard.h"
 #import "SettingsKeys.h"
 
@@ -108,9 +107,7 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
         const char *desiredSelector = sel_getName(NOW_PLAYING_APP_CHANGED_SELECTOR);
         if (strcmp(selector, desiredSelector) == 0) {
             const char *bundleID = xpc_dictionary_get_string(xpc_dictionary, "rbs_argument_0");
-
             RBProcessManager *processManager = MSHookIvar<RBProcessManager *>(self, "_processManager");
-
             [processManager nowPlayingAppChanged:bundleID ?
                                                  [NSString stringWithUTF8String:bundleID] : nil];
 
