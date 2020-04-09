@@ -1,2 +1,2 @@
 echo "Thanks for installing!"
-killall runningboardd
+killall runningboardd || echo "Target process was not running."

@@ -1,1 +1,1 @@
-killall runningboardd
+killall runningboardd || echo "Target process was not running."
