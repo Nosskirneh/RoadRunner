@@ -73,8 +73,8 @@
                                                             handler:^(UIAlertAction *action) {
             [self savePreferenceValue:value specifier:specifier];
         }];
-        [self presentAlertWithTitle:@"Restart of SpringBoard"
-                            message:@"Changing this setting requires SpringBoard to be restarted. Do you wish to proceed?"
+        [self presentAlertWithTitle:@"Restart of processes"
+                            message:@"Changing this setting requires SpringBoard and another process to be restarted. Do you wish to proceed?\n\nIf choosing to do it later, you need to restart through this settings panel."
                             actions:@[respringAction, cancelAction, laterAction]];
         return;
     } else if ((restart = [specifier propertyForKey:kRequiresAppRestart]) && [restart boolValue]) {
