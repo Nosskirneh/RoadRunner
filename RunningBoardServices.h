@@ -8,6 +8,7 @@
 
 @interface RBSConnection : NSObject
 + (id)sharedInstance;
+- (id)_connection;
 @end
 
 @interface RBSProcessIdentity : NSObject
@@ -34,4 +35,10 @@
 @interface BSXPCCoder : NSObject
 - (BOOL)decodeBoolForKey:(NSString *)key;
 - (void)encodeBool:(BOOL)value forKey:(NSString *)key;
+@end
+
+
+@interface RBSXPCMessage : NSObject
++ (id)messageForMethod:(SEL)method arguments:(NSArray *)arguments;
+- (id)invokeOnConnection:(id)connection withReturnClass:(Class)returnClass error:(id *)error;
 @end

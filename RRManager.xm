@@ -14,9 +14,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     return [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
 }
 
-@implementation RRManager {
-    RRCenter *_center_out;
-}
+@implementation RRManager
 
 - (void)setup {
     int token;
@@ -61,10 +59,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                 }
             }
 
-            /* Setup communication channel to RunningBoard and
-               subscribe to now playing app changes. */
-            _center_out = [RRCenter centerNamed:KP_IDENTIFIER_RB];
-
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(nowPlayingAppChanged:)
                                                          name:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
@@ -84,9 +78,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     _trialEnded = YES;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-    [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
-                      withArguments:nil
-                         completion:nil];
+    [self sendNowPlayingPIDInfo:nil];
 }
 
 - (void)dealloc {
@@ -122,16 +114,11 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
         }
     }
 
-    NSDictionary *data;
-    if (bundleID) {
-        data = @{
-            kApp : bundleID
-        };
-    }
-
-    [_center_out callExternalMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
-                      withArguments:data
-                         completion:nil];
+    RBSXPCMessage *message = [%c(RBSXPCMessage) messageForMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
+                                                       arguments:bundleID ? @[bundleID] : nil];
+    [message invokeOnConnection:[[%c(RBSConnection) sharedInstance] _connection]
+                withReturnClass:nil
+                          error:nil];
 }
 
 - (void)restoreMediaApp:(SBApplication *)app PID:(int)pid {

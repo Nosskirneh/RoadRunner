@@ -3,25 +3,13 @@
 #import "RunningBoard.h"
 #import "SettingsKeys.h"
 
+#import <xpc/xpc.h>
+typedef NSObject<OS_xpc_object> *xpc_object_t;
+
 
 %hook RBProcessManager
 
-%property (nonatomic, retain) RRCenter *kp_center_in;
 %property (nonatomic, retain) NSString *nowPlayingBundleID;
-
-/* Setup communication channel from SpringBoard */
-- (id)initWithBundlePropertiesManager:(id)bundlePropertiesManager
-                   entitlementManager:(id)entitlementManager
-                   jetsamBandProvider:(id)jetsamBandProvider
-                             delegate:(id)delegate {
-    self = %orig;
-
-    RRCenter *center = [RRCenter centerNamed:KP_IDENTIFIER_RB];
-    [center addTarget:self action:NOW_PLAYING_APP_CHANGED_SELECTOR];
-    self.kp_center_in = center;
-
-    return self;
-}
 
 %new
 - (RBProcess *)processForBundleID:(NSString *)bundleID {
@@ -31,7 +19,7 @@
 
 /* Receive information about now playing app changes. */
 %new
-- (void)nowPlayingAppChanged:(NSDictionary *)data {
+- (void)nowPlayingAppChanged:(NSString *)bundleID {
     // Clear any previous playing process as not playing
     if (self.nowPlayingBundleID) {
         RBProcess *previousPartyProcess = [self processForBundleID:self.nowPlayingBundleID];
@@ -39,8 +27,8 @@
         self.nowPlayingBundleID = nil;
     }
 
-    if (data) {
-        self.nowPlayingBundleID = data[kApp];
+    if (bundleID) {
+        self.nowPlayingBundleID = bundleID;
         RBProcess *partyProcess = [self processForBundleID:self.nowPlayingBundleID];
         partyProcess.handle.partying = YES;
     }
@@ -107,6 +95,30 @@
     RBSProcessHandle *handle = self.process;
     [coder encodeBool:handle.partying forKey:kPartyingProcess];
     [coder encodeBool:handle.immortal forKey:kImmortalProcess];
+}
+
+%end
+
+
+%hook RBConnectionClient
+
+- (void)handleMessage:(xpc_object_t)xpc_dictionary {
+    const char *selector = xpc_dictionary_get_string(xpc_dictionary, "rbs_selector");
+    if (selector != NULL) {
+        const char *desiredSelector = sel_getName(NOW_PLAYING_APP_CHANGED_SELECTOR);
+        if (strcmp(selector, desiredSelector) == 0) {
+            const char *bundleID = xpc_dictionary_get_string(xpc_dictionary, "rbs_argument_0");
+
+            RBProcessManager *processManager = MSHookIvar<RBProcessManager *>(self, "_processManager");
+
+            [processManager nowPlayingAppChanged:bundleID ?
+                                                 [NSString stringWithUTF8String:bundleID] : nil];
+
+            return;
+        }
+    }
+
+    %orig;
 }
 
 %end

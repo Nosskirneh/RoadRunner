@@ -21,10 +21,10 @@
 - (RBProcess *)processForIdentity:(RBSProcessIdentity *)identity;
 @end
 
-@interface RBProcessManager (KeepPlaying)
-@property (nonatomic, retain) RRCenter *kp_center_in;
+@interface RBProcessManager (RoadRunner)
 @property (nonatomic, retain) NSString *nowPlayingBundleID;
 - (RBProcess *)processForBundleID:(NSString *)bundleID;
+- (void)nowPlayingAppChanged:(NSString *)bundleID;
 @end
 
 
