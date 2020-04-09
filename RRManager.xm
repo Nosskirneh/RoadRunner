@@ -214,7 +214,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     }
 }
 
-
 - (NSDictionary *)getAllProcessStates {
     RBSConnection *connection = [%c(RBSConnection) sharedInstance];
     return [MSHookIvar<NSDictionary *>(connection, "_stateByIdentity") copy];

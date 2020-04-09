@@ -33,7 +33,7 @@
             <key>label</key>
             <string>Enabled</string>
             <key>PostNotification</key>
-            <string>se.nosskirneh.keeppartying/settingsChanged</string>
+            <string>se.nosskirneh.roadrunner/settingsChanged</string>
         </dict>
 
 
