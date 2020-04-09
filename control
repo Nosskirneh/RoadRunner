@@ -1,6 +1,6 @@
 Package: se.nosskirneh.roadrunner
 Name: RoadRunner
-Depends: mobilesubstrate
+Depends: mobilesubstrate, firmware (>= 13.0)
 Version: 0.1
 Architecture: iphoneos-arm
 Description: Keep now playing app active through resprings
