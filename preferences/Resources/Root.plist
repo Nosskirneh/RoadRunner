@@ -32,8 +32,8 @@
             <string>enabled</string>
             <key>label</key>
             <string>Enabled</string>
-            <key>PostNotification</key>
-            <string>se.nosskirneh.roadrunner/settingsChanged</string>
+            <key>requiresRespring</key>
+            <true/>
         </dict>
 
 

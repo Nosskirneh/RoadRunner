@@ -106,10 +106,10 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
     if (selector != NULL) {
         const char *desiredSelector = sel_getName(NOW_PLAYING_APP_CHANGED_SELECTOR);
         if (strcmp(selector, desiredSelector) == 0) {
-            const char *bundleID = xpc_dictionary_get_string(xpc_dictionary, "rbs_argument_0");
+            const char *identifier = xpc_dictionary_get_string(xpc_dictionary, "rbs_argument_0");
             RBProcessManager *processManager = MSHookIvar<RBProcessManager *>(self, "_processManager");
-            [processManager nowPlayingAppChanged:bundleID ?
-                                                 [NSString stringWithUTF8String:bundleID] : nil];
+            NSString *bundleID = identifier ? [NSString stringWithUTF8String:identifier] : nil;
+            [processManager nowPlayingAppChanged:bundleID];
 
             return;
         }
@@ -119,7 +119,6 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
 }
 
 %end
-
 
 
 %ctor {
