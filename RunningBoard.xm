@@ -109,6 +109,8 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
 %end
 
 
+/* Messages for change of media app is sent using the stock
+   iOS XPC communication channel. */
 %hook RBConnectionClient
 
 - (void)handleMessage:(xpc_object_t)xpc_dictionary {
