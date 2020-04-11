@@ -1,5 +1,7 @@
 #import "RunningBoardServices.h"
 
+#define kInstallUpdateCode 0xDEAD6502
+
 
 @interface RBSProcessHandle (RB)
 @property (nonatomic, assign) BOOL partying;
@@ -25,8 +27,4 @@
 @property (nonatomic, retain) NSString *nowPlayingBundleID;
 - (RBProcess *)processForBundleID:(NSString *)bundleID;
 - (void)nowPlayingAppChanged:(NSString *)bundleID;
-@end
-
-
-@interface RBSTerminateContext : NSObject
 @end

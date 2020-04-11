@@ -18,6 +18,17 @@
 @end
 
 
+@interface RBSTerminateContext : NSObject
+@property (assign, nonatomic) unsigned long long exceptionCode;
+@end
+
+@interface RBSTerminateRequest : NSObject
+@property (nonatomic, copy) RBSProcessIdentity *processIdentity;
+@property (nonatomic, readonly) RBSTerminateContext *context;
+@end
+
+
+
 @class RBSProcessState, RBSProcessHandle;
 
 @interface RBSProcessHandle : NSObject
