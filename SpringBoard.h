@@ -44,7 +44,3 @@
 - (BOOL)containsItemWithBundleIdentifier:(NSString *)bundleIdentifier;
 - (NSArray<SBDisplayItem *> *)allItems;
 @end
-
-@interface SBReusableSnapshotItemContainer : NSObject
-@property (nonatomic, retain) SBAppLayout *snapshotAppLayout;
-@end

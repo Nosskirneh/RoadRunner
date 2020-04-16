@@ -11,11 +11,14 @@ RRManager *manager;
 /* Any previously excluded process needs to be manually
    killed when the user wants to. I suspect this is
    because the process is no longer being tracked. */
-%hook SBFluidSwitcherViewController
+%hook SBMainSwitcherViewController
 
-- (void)killContainer:(SBReusableSnapshotItemContainer *)container
-            forReason:(long long)reason {
-    SBAppLayout *appLayout = container.snapshotAppLayout;
+- (void)_removeAppLayout:(SBAppLayout *)appLayout
+               forReason:(long long)reason
+      modelMutationBlock:(id)mutationBlock
+              completion:(id)completion {
+    %orig;
+
     NSString *bundleID = [appLayout allItems][0].bundleIdentifier;
     RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:bundleID];
 
@@ -25,8 +28,6 @@ RRManager *manager;
     if (state.immortal) {
         [manager killImmortalPID:state.process.pid];
     }
-
-    %orig;
 }
 
 %end
