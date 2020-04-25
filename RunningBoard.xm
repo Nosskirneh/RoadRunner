@@ -88,6 +88,13 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
     return self;
 }
 
+- (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
+    %orig;
+
+    [coder encodeBool:self.partying forKey:kPartyingProcess];
+    [coder encodeBool:self.immortal forKey:kImmortalProcess];
+}
+
 %end
 
 
