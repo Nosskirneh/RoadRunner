@@ -38,6 +38,9 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
     if (request.context.exceptionCode == kInstallUpdateCode) {
         RBProcess *process = [self processForIdentity:request.processIdentity];
         process.handle.partying = NO;
+
+        // For some reason, this was necessary
+        [process terminateWithContext:request.context];
     }
 
     return %orig;

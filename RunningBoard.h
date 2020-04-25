@@ -17,6 +17,7 @@
 @property (nonatomic, copy, readonly) RBSProcessHandle *handle;
 
 - (int)rbs_pid;
+- (BOOL)terminateWithContext:(RBSTerminateContext *)context;
 @end
 
 @interface RBProcessManager : NSObject
