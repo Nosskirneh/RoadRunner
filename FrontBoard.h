@@ -24,17 +24,24 @@
 @end
 
 
-typedef enum ProcessVisiblity {
-    Unknown = 0,
-    Background = 1,
-    Foreground = 2,
-    ForegroundObscured = 3
-} ProcessVisiblity;
+typedef enum ProcessVisibility {
+    VisibilityUnknown = 0,
+    VisibilityBackground = 1,
+    VisibilityForeground = 2,
+    VisibilityForegroundObscured = 3
+} ProcessVisibility;
+
+typedef enum ProcessTaskState {
+    TaskStateUnknown = 0,
+    TaskStateNotRunning = 1,
+    TaskStateRunning = 2,
+    TaskStateSuspended = 3
+} ProcessTaskState;
 
 @interface FBProcessState : NSObject
 @property (assign, getter=isForeground, nonatomic) BOOL foreground;
-@property (assign, nonatomic) ProcessVisiblity visibility;
-@property (assign, nonatomic) ProcessVisiblity taskState;
+@property (assign, nonatomic) ProcessVisibility visibility;
+@property (assign, nonatomic) ProcessTaskState taskState;
 - (id)initWithPid:(int)pid;
 @end
 

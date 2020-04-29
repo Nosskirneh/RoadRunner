@@ -162,23 +162,18 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     [app _processDidLaunch:process];
 
     FBProcessState *processState = [[%c(FBProcessState) alloc] initWithPid:pid];
-    [processState setVisibility:Background];
-    [processState setTaskState:Background];
+
+    [processState setVisibility:VisibilityBackground];
+    [processState setTaskState:TaskStateRunning];
 
     SBApplicationProcessState *sbProcessSate = [[%c(SBApplicationProcessState) alloc] _initWithProcess:process
                                                                                          stateSnapshot:processState];
     [app _setInternalProcessState:sbProcessSate];
 
-
-    [processState setVisibility:Foreground];
-    sbProcessSate = [[%c(SBApplicationProcessState) alloc] _initWithProcess:process
-                                                              stateSnapshot:processState];
-    [app _setInternalProcessState:sbProcessSate];
-
     SpringBoard *springBoard = (SpringBoard *)[UIApplication sharedApplication];
     [springBoard launchApplicationWithIdentifier:bundleID suspended:YES];
 
-    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
+    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.3 * NSEC_PER_SEC);
     dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
         FBSceneManager *sceneManager = [%c(FBSceneManager) sharedInstance];
         FBScene *scene = [sceneManager sceneWithIdentifier:[app _baseSceneIdentifier]];
