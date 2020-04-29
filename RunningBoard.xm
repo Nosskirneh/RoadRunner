@@ -76,9 +76,11 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
             bundleData:(id)bundleData
               reported:(BOOL)reported {
     self = %orig;
+
     // These have to be initialized to NO for some reason
     self.partying = NO;
     self.immortal = NO;
+
     return self;
 }
 
