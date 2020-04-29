@@ -32,11 +32,30 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
             for (RBSProcessIdentity *identity in states) {
                 RBSProcessState *state = states[identity];
                 RBSProcessHandle *process = state.process;
+
+                // Don't process deamons
+                if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication)
+                    continue;
+
+                // state.immortal = state.taskState == RBSTaskStateRunningActive;
+                /* This fixes a rare case when the properties are cleared.
+                   The solution is to rely on SpringBoard to propagate the
+                   party information to RunningBoard. That's why we can use
+                   the party property regardless.
+
+                   This happens when installing the tweak and only killing
+                   SpringBoard. For some reason, RunningBoard seems to lose
+                   information when this happens. However, when simply executing
+                   `killall SpringBoard`, this is not happening. */
+                if (state.partying && !state.immortal) {
+                    state.immortal = YES;
+                }
+
                 int pid = process.pid;
 
                 if (state.immortal) {
                     if (state.partying) {
-                        dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
+                        dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
                         dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
                             NSString *bundleID = identity.embeddedApplicationIdentifier;
                             SBApplication *app = [self reattachImmortalProcess:bundleID
@@ -51,7 +70,8 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                         // Kill any non-partying apps
                         [self killImmortalPID:pid];
                     }
-                } else if (process.hostProcess && process.hostProcess.currentState.immortal) {
+                } else if (process.hostProcess && (process.hostProcess.currentState.immortal ||
+                                                   process.hostProcess.currentState.partying)) {
                     /* Reconnect extension processes to their host processes
                        (for example WebKit playing inside of MobileSafari). */
                     [self reattachExtensionProcess:pid];

@@ -24,6 +24,7 @@
 @end
 
 @interface SBApplication (Private)
+@property (assign, getter=isPlayingAudio, nonatomic) BOOL playingAudio;
 - (void)_processWillLaunch:(FBApplicationProcess *)applicationProcess;
 - (void)_processDidLaunch:(FBApplicationProcess *)applicationProcess;
 - (void)_setInternalProcessState:(SBApplicationProcessState *)processState;

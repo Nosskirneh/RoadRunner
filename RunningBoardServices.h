@@ -1,6 +1,9 @@
 #define kImmortalProcess @"immortalProcess"
 #define kPartyingProcess @"partyingProcess"
 
+typedef enum RBSTaskState {
+    RBSTaskStateRunningActive = 4
+} RBSTaskState;
 
 @interface RBSProcessIdentifier : NSObject
 - (int)rbs_pid;
@@ -12,6 +15,7 @@
 @end
 
 @interface RBSProcessIdentity : NSObject
+@property (getter=isEmbeddedApplication, nonatomic, readonly) BOOL embeddedApplication;
 @property (nonatomic, copy, readonly) NSString *embeddedApplicationIdentifier;
 @property (nonatomic, copy, readonly) RBSProcessIdentifier *hostIdentifier;
 + (id)identityForEmbeddedApplicationIdentifier:(NSString *)applicationIdentifier;
@@ -41,6 +45,7 @@
 
 @interface RBSProcessState : NSObject
 @property (nonatomic, readonly) RBSProcessHandle *process;
+@property (assign, nonatomic) unsigned char taskState;
 @end
 
 @interface BSXPCCoder : NSObject
