@@ -143,33 +143,55 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 - (void)restoreMediaApp:(SBApplication *)app PID:(int)pid {
     FBApplicationProcess *process = getProcessForPID(pid);
     [process setNowPlayingWithAudio:YES];
+    [app setPlayingAudio:YES];
 
-    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC);
-    dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
-        // Restore MediaRemote
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-        [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
-                              object:nil
-                            userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey: @(pid)}];
-        [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification
-                              object:nil
-                            userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingUserInfoKey: @(YES)}];
+    // Restore MediaRemote
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
+                          object:nil
+                        userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationPIDUserInfoKey: @(pid)}];
 
-        MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef info) {
-            [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDidChangeNotification
-                                  object:nil
-                                userInfo:(__bridge NSDictionary *)info];
-        });
+    [center postNotificationName:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification
+                          object:nil
+                        userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingUserInfoKey: @(YES)}];
 
-        // Restore SBMediaController
-        SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
-        MSHookIvar<SBApplication *>(mediaController, "_lastNowPlayingApplication") = app;
-        mediaController.nowPlayingProcessPID = pid;
+    // Force Flow to update the information
+    notify_post([((__bridge NSString *)kMRMediaRemoteNowPlayingInfoDidChangeNotification) UTF8String]);
 
-        [center postNotificationName:kSBMediaNowPlayingAppChangedNotification
-                              object:mediaController];
-    });
+    // Restore SBMediaController
+    SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
+    MSHookIvar<SBApplication *>(mediaController, "_lastNowPlayingApplication") = app;
+    mediaController.nowPlayingProcessPID = pid;
+
+    [center postNotificationName:kSBMediaNowPlayingAppChangedNotification
+                          object:mediaController];
 }
+
+/* Use this if users start to reach out saying tweaks depending
+   on the media artwork doesn't work right away, such as CCArtwork. */
+/* We have to wait for a while, otherwise calls to MediaRemote that
+   retrieves information never fires the compeltion block, possibly
+   due to the information not being ready. */
+// - (void)forceMediaUpdate {
+//     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+//         MRMediaRemoteGetNowPlayingApplicationIsPlaying(dispatch_get_main_queue(), ^(BOOL isPlaying) {
+//             if (isPlaying) {
+//                 // This causes a short stutter when listening to the Music.app
+//                 // and with other clients the delay isn't long enough for it to
+//                 // be a complete stop, but the volume is ducking.
+//                 MRMediaRemoteSendCommand(kMRPause, nil);
+//                 MRMediaRemoteSendCommand(kMRPlay, nil);
+//             } else {
+//                 MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef info) {
+//                     NSNumber *elapsedTime = ((__bridge NSDictionary *)info)[(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime];
+//                     if (elapsedTime) {
+//                         MRMediaRemoteSetElapsedTime([elapsedTime floatValue]);
+//                     }
+//                 });
+//             }
+//         });
+//     });
+// }
 
 /* Reattach a process with a specific bundleID and PID. */
 - (SBApplication *)reattachImmortalProcess:(NSString *)bundleID PID:(int)pid {
