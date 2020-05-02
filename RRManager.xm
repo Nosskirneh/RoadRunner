@@ -57,12 +57,12 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                     if (state.partying) {
                         dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
                         dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
-                            NSString *bundleID = identity.embeddedApplicationIdentifier;
-                            SBApplication *app = [self reattachImmortalProcess:bundleID
+                            FBApplicationProcess *process = getProcessForPID(pid);
+                            SBApplication *app = [self reattachImmortalProcess:process
+                                                                      bundleID:identity.embeddedApplicationIdentifier
                                                                            PID:pid];
 
-                            [self restoreMediaApp:app PID:pid];
-                            _immortalPartyingBundleID = bundleID;
+                            [self restoreMediaProcess:process app:app PID:pid];
                         });
                     } else if (process.hostProcess && process.hostProcess.currentState.partying) {
                         [self reattachExtensionProcess:pid];
@@ -140,8 +140,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                           error:nil];
 }
 
-- (void)restoreMediaApp:(SBApplication *)app PID:(int)pid {
-    FBApplicationProcess *process = getProcessForPID(pid);
+- (void)restoreMediaProcess:(FBApplicationProcess *)process app:(SBApplication *)app PID:(int)pid {
     [process setNowPlayingWithAudio:YES];
     [app setPlayingAudio:YES];
 
@@ -194,8 +193,9 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 // }
 
 /* Reattach a process with a specific bundleID and PID. */
-- (SBApplication *)reattachImmortalProcess:(NSString *)bundleID PID:(int)pid {
-    FBApplicationProcess *process = getProcessForPID(pid);
+- (SBApplication *)reattachImmortalProcess:(FBApplicationProcess *)process
+                                  bundleID:(NSString *)bundleID
+                                       PID:(int)pid {
     if (!process)
         return nil;
 
