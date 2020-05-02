@@ -8,46 +8,6 @@
 RRManager *manager;
 
 
-/* Any previously excluded process needs to be manually
-   killed when the user wants to. I suspect this is
-   because the process is no longer being tracked. */
-%hook SBMainSwitcherViewController
-
-- (void)_removeAppLayout:(SBAppLayout *)appLayout
-               forReason:(long long)reason
-      modelMutationBlock:(id)mutationBlock
-              completion:(id)completion {
-    %orig;
-
-    NSString *bundleID = [appLayout allItems][0].bundleIdentifier;
-    RBSProcessIdentity *identity = [%c(RBSProcessIdentity) identityForEmbeddedApplicationIdentifier:bundleID];
-
-    NSDictionary *states = [manager getAllProcessStates];
-    RBSProcessState *state = states[identity];
-
-    if (state.immortal) {
-        [manager killImmortalPID:state.process.pid];
-    }
-}
-
-%end
-
-
-/* Overriding this solves issues where iOS wouldn't
-   consider the reattached process as playing media. */
-%hook SBMediaController
-
-+ (BOOL)applicationCanBeConsideredNowPlaying:(SBApplication *)app {
-    if ([app.bundleIdentifier isEqualToString:manager.immortalPartyingBundleID]) {
-        return YES;
-    }
-
-    return %orig;
-}
-
-%end
-
-
 /* Transfer the binary data back to our properties. */
 %hook RBSProcessState
 

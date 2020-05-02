@@ -243,11 +243,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 - (void)killImmortalPID:(int)pid {
     FBApplicationProcess *process = getProcessForPID(pid);
     [process killForReason:kKilledByAppSwitcher andReport:NO withDescription:nil];
-
-    NSString *bundleID = process.bundleIdentifier;
-    if ([bundleID isEqualToString:_immortalPartyingBundleID]) {
-        _immortalPartyingBundleID = nil;
-    }
 }
 
 - (NSDictionary *)getAllProcessStates {
