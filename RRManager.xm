@@ -154,9 +154,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                           object:nil
                         userInfo:@{(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingUserInfoKey: @(YES)}];
 
-    // Force Flow to update the information
-    notify_post([((__bridge NSString *)kMRMediaRemoteNowPlayingInfoDidChangeNotification) UTF8String]);
-
     // Restore SBMediaController
     SBMediaController *mediaController = [%c(SBMediaController) sharedInstance];
     MSHookIvar<SBApplication *>(mediaController, "_lastNowPlayingApplication") = app;
@@ -164,6 +161,9 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
     [center postNotificationName:kSBMediaNowPlayingAppChangedNotification
                           object:mediaController];
+
+    // Force Flow to update the information
+    notify_post("se.nosskirneh.roadrunner.restored-media-process");
 }
 
 /* Use this if users start to reach out saying tweaks depending
