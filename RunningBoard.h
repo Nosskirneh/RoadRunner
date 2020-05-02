@@ -1,6 +1,6 @@
 #import "RunningBoardServices.h"
 
-#define kInstallUpdateCode 0xDEAD6502
+#define kParentProcessDied 0xB111B111
 
 
 @interface RBSProcessHandle (RB)

@@ -24,6 +24,7 @@ typedef enum RBSTaskState {
 
 @interface RBSTerminateContext : NSObject
 @property (assign, nonatomic) unsigned long long exceptionCode;
+@property (nonatomic, copy) NSString *explanation;
 @end
 
 @interface RBSTerminateRequest : NSObject

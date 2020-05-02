@@ -33,19 +33,6 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
     }
 }
 
-- (BOOL)executeTerminateRequest:(RBSTerminateRequest *)request withError:(id *)error {
-    // In case the partying app is updated by the user, allow it to get killed
-    if (request.context.exceptionCode == kInstallUpdateCode) {
-        RBProcess *process = [self processForIdentity:request.processIdentity];
-        process.handle.partying = NO;
-
-        // For some reason, this was necessary
-        [process terminateWithContext:request.context];
-    }
-
-    return %orig;
-}
-
 %end
 
 
@@ -54,8 +41,9 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
 
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
     RBSProcessHandle *handle = self.handle;
-
-    if (handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) {
+    if (([context.explanation isEqualToString:@"/usr/libexec/backboardd respawn"] ||
+         context.exceptionCode == kParentProcessDied) &&
+        (handle.partying || (self.hostProcess && self.hostProcess.handle.partying))) {
         handle.immortal = YES;
         return YES;
     }
