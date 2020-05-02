@@ -199,14 +199,13 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     if (!process)
         return nil;
 
+    FBProcessState *processState = process.state;
+    [processState setVisibility:VisibilityBackground];
+    [processState setTaskState:TaskStateRunning];
+
     SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
     [app _processWillLaunch:process];
     [app _processDidLaunch:process];
-
-    FBProcessState *processState = [[%c(FBProcessState) alloc] initWithPid:pid];
-
-    [processState setVisibility:VisibilityBackground];
-    [processState setTaskState:TaskStateRunning];
 
     SBApplicationProcessState *sbProcessSate = [[%c(SBApplicationProcessState) alloc] _initWithProcess:process
                                                                                          stateSnapshot:processState];

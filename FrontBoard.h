@@ -1,28 +1,6 @@
 #import "BaseBoard.h"
 #import "RunningBoardServices.h"
 
-@interface FBProcess : NSObject
-@property (nonatomic, copy, readonly) NSString *bundleIdentifier;
-@end
-
-@interface FBExtensionProcess : FBProcess
-@property (nonatomic, readonly) FBProcess *hostProcess;
-@end
-
-@interface FBApplicationProcess : FBProcess
-@property (assign, getter=isNowPlayingWithAudio, nonatomic) BOOL nowPlayingWithAudio;
-- (void)killForReason:(long long)reason
-            andReport:(BOOL)report
-      withDescription:(id)description;
-@end
-
-@interface FBProcessManager : NSObject
-+ (id)sharedInstance;
-- (id)applicationProcessForPID:(int)pid;
-- (id)processForPID:(int)pid;
-- (id)registerProcessForHandle:(BSProcessHandle *)handle;
-@end
-
 
 typedef enum ProcessVisibility {
     VisibilityUnknown = 0,
@@ -45,10 +23,39 @@ typedef enum ProcessTaskState {
 - (id)initWithPid:(int)pid;
 @end
 
+@interface FBProcess : NSObject
+@property (nonatomic, copy, readonly) NSString *bundleIdentifier;
+@property (nonatomic, copy, readonly) FBProcessState *state;
+@end
+
+@interface FBExtensionProcess : FBProcess
+@property (nonatomic, readonly) FBProcess *hostProcess;
+@end
+
+@interface FBApplicationProcess : FBProcess
+@property (assign, getter=isNowPlayingWithAudio, nonatomic) BOOL nowPlayingWithAudio;
+- (void)killForReason:(long long)reason
+            andReport:(BOOL)report
+      withDescription:(id)description;
+@end
+
+@interface FBProcessManager : NSObject
++ (id)sharedInstance;
+- (id)applicationProcessForPID:(int)pid;
+- (id)processForPID:(int)pid;
+- (id)registerProcessForHandle:(BSProcessHandle *)handle;
+@end
+
 
 @interface FBSMutableSceneSettings : NSObject
 @property (assign, getter=isForeground, nonatomic) BOOL foreground;
 @property (assign, getter=isBackgrounded, nonatomic) BOOL backgrounded;
+@end
+
+
+@interface FBSProcessHandle : NSObject
+@property (nonatomic, readonly) int pid;
+@property (nonatomic, copy,readonly) NSString *bundleIdentifier;
 @end
 
 @interface FBScene : NSObject
