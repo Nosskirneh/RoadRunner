@@ -55,8 +55,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
                 if (state.immortal) {
                     if (state.partying) {
-                        dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
-                        dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+                        dispatch_sync(dispatch_get_main_queue(), ^{
                             FBApplicationProcess *process = getProcessForPID(pid);
                             SBApplication *app = [self reattachImmortalProcess:process
                                                                       bundleID:identity.embeddedApplicationIdentifier
@@ -211,27 +210,24 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     SpringBoard *springBoard = (SpringBoard *)[UIApplication sharedApplication];
     [springBoard launchApplicationWithIdentifier:bundleID suspended:YES];
 
-    dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.3 * NSEC_PER_SEC);
-    dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
-        FBSceneManager *sceneManager = [%c(FBSceneManager) sharedInstance];
-        FBScene *scene = [sceneManager sceneWithIdentifier:[app _baseSceneIdentifier]];
+    FBSceneManager *sceneManager = [%c(FBSceneManager) sharedInstance];
+    FBScene *scene = [sceneManager sceneWithIdentifier:[app _baseSceneIdentifier]];
 
-        FBSMutableSceneSettings *sceneSettings = [scene mutableSettings];
-        sceneSettings.foreground = YES;
-        sceneSettings.backgrounded = NO;
-        [sceneManager _applyMutableSettings:sceneSettings
-                                    toScene:scene
-                      withTransitionContext:nil
-                                 completion:nil];
+    FBSMutableSceneSettings *sceneSettings = [scene mutableSettings];
+    sceneSettings.foreground = YES;
+    sceneSettings.backgrounded = NO;
+    [sceneManager _applyMutableSettings:sceneSettings
+                                toScene:scene
+                  withTransitionContext:nil
+                             completion:nil];
 
-        FBSMutableSceneSettings *newSceneSettings = [scene mutableSettings];
-        newSceneSettings.foreground = NO;
-        newSceneSettings.backgrounded = YES;
-        [sceneManager _applyMutableSettings:newSceneSettings
-                                    toScene:scene
-                      withTransitionContext:nil
-                                 completion:nil];
-    });
+    FBSMutableSceneSettings *newSceneSettings = [scene mutableSettings];
+    newSceneSettings.foreground = NO;
+    newSceneSettings.backgrounded = YES;
+    [sceneManager _applyMutableSettings:newSceneSettings
+                                toScene:scene
+                  withTransitionContext:nil
+                             completion:nil];
 
     return app;
 }
