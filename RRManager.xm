@@ -62,7 +62,11 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 
                 if (state.immortal) {
                     if (state.partying) {
-                        dispatch_sync(dispatch_get_main_queue(), ^{
+                        /* We need to wait a small delay, otherwise NextUp might show before
+                           the updated LS media widget's preferredContentSize has been used.
+                           This could probably be solved better but a small delay isn't noticeable. */
+                        dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.25 * NSEC_PER_SEC);
+                        dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
                             FBApplicationProcess *process = getProcessForPID(pid);
                             SBApplication *app = [self reattachImmortalProcess:process
                                                                       bundleID:identity.embeddedApplicationIdentifier
