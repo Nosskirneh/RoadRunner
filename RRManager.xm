@@ -4,6 +4,7 @@
 #import <notify.h>
 #import "FrontBoard.h"
 #import "SpringBoard.h"
+#import "SettingsKeys.h"
 
 #define kSBSpringBoardDidLaunchNotification "SBSpringBoardDidLaunchNotification"
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
@@ -24,6 +25,13 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
         ^(int _) {
             notify_cancel(token);
 
+            BOOL excludeAllApps = NO;
+            NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+            if (dict) {
+                NSNumber *allApps = dict[kExcludeAllApps];
+                excludeAllApps = !allApps || [allApps boolValue];
+            }
+
             /* Go through all existing processes.
                Reattach any media playing process, reattach any extension
                (WebKit) process to its host process and kill any immortal
@@ -37,7 +45,6 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                 if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication)
                     continue;
 
-                // state.immortal = state.taskState == RBSTaskStateRunningActive;
                 /* This fixes a rare case when the properties are cleared.
                    The solution is to rely on SpringBoard to propagate the
                    party information to RunningBoard. That's why we can use
@@ -47,7 +54,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                    SpringBoard. For some reason, RunningBoard seems to lose
                    information when this happens. However, when simply executing
                    `killall SpringBoard`, this is not happening. */
-                if (state.partying && !state.immortal) {
+                if (!state.immortal && (state.partying || excludeAllApps)) {
                     state.immortal = YES;
                 }
 
@@ -65,6 +72,13 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
                         });
                     } else if (process.hostProcess && process.hostProcess.currentState.partying) {
                         [self reattachExtensionProcess:pid];
+                    } else if (excludeAllApps) {
+                        dispatch_sync(dispatch_get_main_queue(), ^{
+                            FBApplicationProcess *process = getProcessForPID(pid);
+                            [self reattachImmortalProcess:process
+                                                 bundleID:identity.embeddedApplicationIdentifier
+                                                      PID:pid];
+                        });
                     } else {
                         // Kill any non-partying apps
                         [self killImmortalPID:pid];

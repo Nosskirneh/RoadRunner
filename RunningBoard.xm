@@ -1,10 +1,20 @@
 #import "Common.h"
 #import "RunningBoard.h"
 #import "SettingsKeys.h"
+#import <notify.h>
 
 #import <xpc/xpc.h>
 typedef NSObject<OS_xpc_object> *xpc_object_t;
 
+static BOOL excludeAllApps;
+
+static void loadPreferences() {
+    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+    if (dict) {
+        NSNumber *allApps = dict[kExcludeAllApps];
+        excludeAllApps = !allApps || [allApps boolValue];
+    }
+}
 
 %hook RBProcessManager
 
@@ -43,7 +53,9 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
     RBSProcessHandle *handle = self.handle;
     if (([context.explanation isEqualToString:@"/usr/libexec/backboardd respawn"] ||
          context.exceptionCode == kParentProcessDied) &&
-        (handle.partying || (self.hostProcess && self.hostProcess.handle.partying))) {
+        ((handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) ||
+         (excludeAllApps && self.identity.embeddedApplication &&
+          ![self.identity.embeddedApplicationIdentifier isEqualToString:@"com.apple.Spotlight"]))) {
         handle.immortal = YES;
         return YES;
     }
@@ -136,6 +148,16 @@ typedef NSObject<OS_xpc_object> *xpc_object_t;
 %ctor {
     if (%c(RBProcessManager) == nil || !isEnabled())
         return;
+
+    int _;
+    notify_register_dispatch(kSettingsChanged,
+        &_,
+        dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
+        ^(int _) {
+            loadPreferences();
+        }
+    );
+    loadPreferences();
 
     // No need to check license here as SpringBoard checks that
     %init;

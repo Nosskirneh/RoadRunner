@@ -19,6 +19,10 @@
             <string>PSGroupCell</string>
             <key>label</key>
             <string>Settings</string>
+            <key>footerAlignment</key>
+            <integer>0</integer>
+            <key>footerText</key>
+            <string>Disabling this setting will make RoadRunner only excluding the now playing app.</string>
         </dict>
 
         <dict>
@@ -34,6 +38,21 @@
             <string>Enabled</string>
             <key>requiresRespring</key>
             <true/>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>KPSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
+            <string>excludeAllApps</string>
+            <key>label</key>
+            <string>Exclude all apps</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.roadrunner.settings-changed</string>
         </dict>
 
 
