@@ -114,6 +114,8 @@ static inline void initTrial() {
             case CheckInvalidLicense:
             case CheckUDIDsDoNotMatch:
             default:
+                // In case the user is running a trial license and then removes it
+                [manager setTrialEnded];
                 return;
         }
         // ---
