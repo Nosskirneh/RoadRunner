@@ -52,6 +52,7 @@ static void loadPreferences() {
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
     RBSProcessHandle *handle = self.handle;
     if (([context.explanation isEqualToString:@"/usr/libexec/backboardd respawn"] ||
+         [context.explanation isEqualToString:@"SBRestartManager"] ||
          context.exceptionCode == kParentProcessDied) &&
         ((handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) ||
          (excludeAllApps && self.identity.embeddedApplication &&
