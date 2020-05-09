@@ -15,9 +15,20 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     return [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
 }
 
+__attribute__((always_inline, visibility("hidden")))
+static inline void setRunning(BOOL running) {
+    RBSXPCMessage *message = [%c(RBSXPCMessage) messageForMethod:SET_RUNNING
+                                                       arguments:@[@(running)]];
+    [message invokeOnConnection:[[%c(RBSConnection) sharedInstance] _connection]
+                withReturnClass:nil
+                          error:nil];
+}
+
 @implementation RRManager
 
 - (void)setup {
+    setRunning(YES);
+
     int token;
     notify_register_dispatch(kSBSpringBoardDidLaunchNotification,
         &token,
@@ -115,6 +126,7 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     [self sendNowPlayingPIDInfo:nil];
+    setRunning(NO);
 }
 
 - (void)dealloc {
