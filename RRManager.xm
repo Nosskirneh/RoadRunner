@@ -52,7 +52,7 @@ static inline void setRunning(BOOL running) {
                 RBSProcessState *state = states[identity];
                 RBSProcessHandle *process = state.process;
 
-                // Don't process deamons
+                // Don't process daemons
                 if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication)
                     continue;
 
