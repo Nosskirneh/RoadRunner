@@ -134,21 +134,15 @@ static void loadPreferences() {
 - (void)handleMessage:(xpc_object_t)xpc_dictionary {
     const char *selName = xpc_dictionary_get_string(xpc_dictionary, "rbs_selector");
     if (selName != NULL) {
-        SEL selector = NOW_PLAYING_APP_CHANGED_SELECTOR;
-        if (strcmp(selName, sel_getName(selector)) == 0) {
-            RBProcessManager *processManager = MSHookIvar<RBProcessManager *>(self, "_processManager");
-            if (![processManager respondsToSelector:selector])
-                return;
-
+        if (strcmp(selName, sel_getName(NOW_PLAYING_APP_CHANGED_SELECTOR)) == 0) {
             const char *identifier = xpc_dictionary_get_string(xpc_dictionary, "rbs_argument_0");
             NSString *bundleID = identifier ? [NSString stringWithUTF8String:identifier] : nil;
+            RBProcessManager *processManager = MSHookIvar<RBProcessManager *>(self, "_processManager");
             [processManager nowPlayingAppChanged:bundleID];
-
             return;
         }
 
-        selector = SET_RUNNING;
-        if (strcmp(selName, sel_getName(selector)) == 0) {
+        if (strcmp(selName, sel_getName(SET_RUNNING)) == 0) {
             running = xpc_dictionary_get_bool(xpc_dictionary, "rbs_argument_0");
             return;
         }
