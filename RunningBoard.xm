@@ -47,7 +47,9 @@ static void loadPreferences() {
 %end
 
 
-/* Exclude the now playing process from being killed. */
+/* Exclude the now playing process from being killed.
+   If excludeAllApps is set, exclude all embedded applications
+   from termination. */
 %hook RBProcess
 
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
@@ -124,8 +126,9 @@ static void loadPreferences() {
 %end
 
 
-/* Messages for change of media app is sent using the stock
-   iOS XPC communication channel. */
+/* Messages for change of media app are sent using the stock
+   iOS XPC communication channel. Controlling the running state
+   from SpringBoard is also carried out through these messages. */
 %hook RBConnectionClient
 
 - (void)handleMessage:(xpc_object_t)xpc_dictionary {
