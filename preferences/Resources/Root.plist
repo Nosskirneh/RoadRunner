@@ -22,7 +22,7 @@
             <key>footerAlignment</key>
             <integer>0</integer>
             <key>footerText</key>
-            <string>If disabled, RoadRunner will only exclude the now playing app.</string>
+            <string>If "Exclude all apps" is disabled, RoadRunner will only exclude the now playing app. If enabled, keep in mind that you need to manually restart apps if a tweak that targets them has been installed or updated.</string>
         </dict>
 
         <dict>
@@ -53,6 +53,17 @@
             <string>Exclude all apps</string>
             <key>PostNotification</key>
             <string>se.nosskirneh.roadrunner.settings-changed</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>cellClass</key>
+            <string>RRColorButtonCell</string>
+            <key>action</key>
+            <string>killAllApps</string>
+            <key>label</key>
+            <string>Kill all apps</string>
         </dict>
 
 
