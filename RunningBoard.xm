@@ -13,7 +13,7 @@ static void loadPreferences() {
     NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
     if (dict) {
         NSNumber *allApps = dict[kExcludeAllApps];
-        excludeAllApps = !allApps || [allApps boolValue];
+        excludeAllApps = allApps && [allApps boolValue];
     }
 }
 

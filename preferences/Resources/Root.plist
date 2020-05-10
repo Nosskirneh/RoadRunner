@@ -22,7 +22,7 @@
             <key>footerAlignment</key>
             <integer>0</integer>
             <key>footerText</key>
-            <string>Disabling this setting will make RoadRunner only excluding the now playing app.</string>
+            <string>If disabled, RoadRunner will only exclude the now playing app.</string>
         </dict>
 
         <dict>
@@ -46,7 +46,7 @@
             <key>cellClass</key>
             <string>KPSwitchTableCell</string>
             <key>default</key>
-            <true/>
+            <false/>
             <key>key</key>
             <string>excludeAllApps</string>
             <key>label</key>

@@ -40,7 +40,7 @@ static inline void setRunning(BOOL running) {
             NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
             if (dict) {
                 NSNumber *allApps = dict[kExcludeAllApps];
-                excludeAllApps = !allApps || [allApps boolValue];
+                excludeAllApps = allApps && [allApps boolValue];
             }
 
             /* Go through all existing processes.
