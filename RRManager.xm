@@ -47,7 +47,6 @@ static inline void setRunning(BOOL running) {
                Reattach any media playing process, reattach any extension
                (WebKit) process to its host process and kill any immortal
                app not playing media anymore. */
-
             [self enumerateAllApplicationProcessesWithBlock:^(RBSProcessIdentity *identity,
                                                               RBSProcessState *state,
                                                               RBSProcessHandle *process) {
