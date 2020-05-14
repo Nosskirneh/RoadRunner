@@ -71,12 +71,15 @@ static inline void setRunning(BOOL running) {
                            This could probably be solved better but a small delay isn't noticeable. */
                         dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.25 * NSEC_PER_SEC);
                         dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+                            NSString *bundleID = identity.embeddedApplicationIdentifier;
                             FBApplicationProcess *process = getProcessForPID(pid);
+
                             SBApplication *app = [self reattachImmortalProcess:process
-                                                                      bundleID:identity.embeddedApplicationIdentifier
+                                                                      bundleID:bundleID
                                                                            PID:pid];
 
                             [self restoreMediaProcess:process app:app PID:pid];
+                            _immortalPartyingBundleID = bundleID;
                         });
                     } else if (process.hostProcess && process.hostProcess.currentState.partying) {
                         [self reattachExtensionProcess:pid];

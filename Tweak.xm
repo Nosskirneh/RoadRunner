@@ -37,6 +37,20 @@ RRManager *manager;
 %end
 
 
+/* Overriding this solves issues where iOS wouldn't
+   consider the reattached process as playing media. */
+%hook SBMediaController
+
++ (BOOL)applicationCanBeConsideredNowPlaying:(SBApplication *)app {
+    if ([app.bundleIdentifier isEqualToString:manager.immortalPartyingBundleID]) {
+        return YES;
+    }
+
+    return %orig;
+}
+
+%end
+
 
 %group PackagePirated
 %hook SBCoverSheetPresentationManager
