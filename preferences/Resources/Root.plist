@@ -55,17 +55,6 @@
             <string>se.nosskirneh.roadrunner.settings-changed</string>
         </dict>
 
-        <dict>
-            <key>cell</key>
-            <string>PSButtonCell</string>
-            <key>cellClass</key>
-            <string>RRColorButtonCell</string>
-            <key>action</key>
-            <string>killAllApps</string>
-            <key>label</key>
-            <string>Kill all apps</string>
-        </dict>
-
 
         <!-- Other -->
         <dict>

@@ -47,9 +47,15 @@ static inline void setRunning(BOOL running) {
                Reattach any media playing process, reattach any extension
                (WebKit) process to its host process and kill any immortal
                app not playing media anymore. */
-            [self enumerateAllApplicationProcessesWithBlock:^(RBSProcessIdentity *identity,
-                                                              RBSProcessState *state,
-                                                              RBSProcessHandle *process) {
+            NSDictionary *states = [self getAllProcessStates];
+            for (RBSProcessIdentity *identity in states) {
+                RBSProcessState *state = states[identity];
+                RBSProcessHandle *process = state.process;
+
+                // Don't process daemons
+                if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication) {
+                    continue;
+                }
                 /* This fixes a rare case when the properties are cleared.
                    The solution is to rely on SpringBoard to propagate the
                    party information to RunningBoard. That's why we can use
@@ -100,24 +106,12 @@ static inline void setRunning(BOOL running) {
                        (for example WebKit playing inside of MobileSafari). */
                     [self reattachExtensionProcess:pid];
                 }
-            }];
+            }
 
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(nowPlayingAppChanged:)
                                                          name:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification
                                                        object:nil];
-        }
-    );
-
-    notify_register_dispatch(kKillAllApps,
-        &token,
-        dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
-        ^(int _) {
-            [self enumerateAllApplicationProcessesWithBlock:^(RBSProcessIdentity *identity,
-                                                              RBSProcessState *state,
-                                                              RBSProcessHandle *process) {
-                [self killApplicationWithPID:process.pid];
-            }];
         }
     );
 }
@@ -257,22 +251,6 @@ static inline void setRunning(BOOL running) {
 - (NSDictionary *)getAllProcessStates {
     RBSConnection *connection = [%c(RBSConnection) sharedInstance];
     return [MSHookIvar<NSDictionary *>(connection, "_stateByIdentity") copy];
-}
-
-- (void)enumerateAllApplicationProcessesWithBlock:(void(^)(RBSProcessIdentity *,
-                                                           RBSProcessState *,
-                                                           RBSProcessHandle *))block {
-    NSDictionary *states = [self getAllProcessStates];
-    for (RBSProcessIdentity *identity in states) {
-        RBSProcessState *state = states[identity];
-        RBSProcessHandle *process = state.process;
-
-        // Don't process daemons
-        if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication)
-            continue;
-
-        block(identity, state, process);
-    }
 }
 
 @end

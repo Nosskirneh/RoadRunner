@@ -96,13 +96,6 @@
         [self.statusAlert hideOverlay];
 }
 
-- (void)killAllApps {
-    UIApplication *app = [UIApplication sharedApplication];
-    [app performSelector:@selector(suspend)];
-    [NSThread sleepForTimeInterval:1.2];
-    notify_post(kKillAllApps);
-}
-
 - (void)sendEmail {
     openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=RoadRunner"]);
 }
