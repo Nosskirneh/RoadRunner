@@ -36,6 +36,17 @@ static inline void setRunning(BOOL running) {
         ^(int _) {
             notify_cancel(token);
 
+            // After about 2 seconds, the daemons have been added to the process states
+            // allowing us to connect to the TextInput daemon.
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                NSDictionary *states = [self getAllProcessStates];
+                RBSProcessIdentity *processIdentity = [%c(RBSProcessIdentity) identityForDaemonJobLabel:@"com.apple.TextInput.kbd"];
+                RBSProcessState *state = states[processIdentity];
+                RBSProcessHandle *process = state.process;
+                [self reattachProcessHandleForPID:process.pid];
+                notify_post(kRoadRunnerSpringBoardRestarted);
+            });
+
             BOOL excludeAllApps = NO;
             NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
             if (dict) {
@@ -88,7 +99,7 @@ static inline void setRunning(BOOL running) {
                             _immortalPartyingBundleID = bundleID;
                         });
                     } else if (process.hostProcess && process.hostProcess.currentState.partying) {
-                        [self reattachExtensionProcess:pid];
+                        [self reattachProcessHandleForPID:pid];
                     } else if (excludeAllApps) {
                         dispatch_sync(dispatch_get_main_queue(), ^{
                             FBApplicationProcess *process = getProcessForPID(pid);
@@ -104,7 +115,7 @@ static inline void setRunning(BOOL running) {
                                                    process.hostProcess.currentState.partying)) {
                     /* Reconnect extension processes to their host processes
                        (for example WebKit playing inside of MobileSafari). */
-                    [self reattachExtensionProcess:pid];
+                    [self reattachProcessHandleForPID:pid];
                 }
             }
 
@@ -116,7 +127,7 @@ static inline void setRunning(BOOL running) {
     );
 }
 
-- (void)reattachExtensionProcess:(int)pid {
+- (void)reattachProcessHandleForPID:(int)pid {
     BSProcessHandle *handle = [%c(BSProcessHandle) processHandleForPID:pid];
     [[%c(FBProcessManager) sharedInstance] registerProcessForHandle:handle];
 }

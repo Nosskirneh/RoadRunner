@@ -19,6 +19,7 @@ typedef enum RBSTaskState {
 @property (nonatomic, copy, readonly) NSString *embeddedApplicationIdentifier;
 @property (nonatomic, copy, readonly) RBSProcessIdentifier *hostIdentifier;
 + (id)identityForEmbeddedApplicationIdentifier:(NSString *)applicationIdentifier;
++ (id)identityForDaemonJobLabel:(NSString *)jobLabel;
 @end
 
 

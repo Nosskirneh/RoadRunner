@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "com.apple.springboard", "com.apple.RunningBoard" ); }; }
+{ Filter = { Bundles = ( "com.apple.springboard", "com.apple.RunningBoard", "com.apple.TextInput" ); }; }
