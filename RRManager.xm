@@ -205,7 +205,7 @@ static inline void setRunning(BOOL running) {
                           object:mediaController];
 
     // Force Flow to update the information
-    notify_post("se.nosskirneh.roadrunner.restored-media-process");
+    notify_post(kRoadRunnerRestoredMediaProcess);
 }
 
 /* Use this if users start to reach out saying tweaks depending
