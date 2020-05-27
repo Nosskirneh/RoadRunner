@@ -233,39 +233,17 @@ static inline void setRunning(BOOL running) {
     if (!process)
         return nil;
 
-    FBProcessState *processState = process.state;
-    [processState setVisibility:VisibilityBackground];
-    [processState setTaskState:TaskStateRunning];
-
     SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
     [app _processWillLaunch:process];
     [app _processDidLaunch:process];
 
+    FBProcessState *processState = process.state;
+    [processState setVisibility:VisibilityBackground];
+    [processState setTaskState:TaskStateRunning];
+
     SBApplicationProcessState *sbProcessSate = [[%c(SBApplicationProcessState) alloc] _initWithProcess:process
                                                                                          stateSnapshot:processState];
     [app _setInternalProcessState:sbProcessSate];
-
-    SpringBoard *springBoard = (SpringBoard *)[UIApplication sharedApplication];
-    [springBoard launchApplicationWithIdentifier:bundleID suspended:YES];
-
-    FBSceneManager *sceneManager = [%c(FBSceneManager) sharedInstance];
-    FBScene *scene = [sceneManager sceneWithIdentifier:[app _baseSceneIdentifier]];
-
-    FBSMutableSceneSettings *sceneSettings = [scene mutableSettings];
-    sceneSettings.foreground = YES;
-    sceneSettings.backgrounded = NO;
-    [sceneManager _applyMutableSettings:sceneSettings
-                                toScene:scene
-                  withTransitionContext:nil
-                             completion:nil];
-
-    FBSMutableSceneSettings *newSceneSettings = [scene mutableSettings];
-    newSceneSettings.foreground = NO;
-    newSceneSettings.backgrounded = YES;
-    [sceneManager _applyMutableSettings:newSceneSettings
-                                toScene:scene
-                  withTransitionContext:nil
-                             completion:nil];
 
     return app;
 }
