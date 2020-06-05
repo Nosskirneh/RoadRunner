@@ -139,77 +139,84 @@ static inline void setRunning(BOOL running) {
                 notify_post(kRoadRunnerSpringBoardRestarted);
             });
 
-            BOOL excludeOtherApps = NO;
-            NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-            if (dict) {
-                NSNumber *allApps = dict[kExcludeOtherApps];
-                excludeOtherApps = allApps && [allApps boolValue];
-            }
-
-            /* Go through all existing processes.
-               Reattach any media playing process, reattach any extension
-               (WebKit) process to its host process and kill any immortal
-               app not playing media anymore. */
-            NSDictionary *states = [self getAllProcessStates];
-            for (RBSProcessIdentity *identity in states) {
-                RBSProcessState *state = states[identity];
-                RBSProcessHandle *process = state.process;
-
-                // Don't process daemons
-                if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication) {
-                    continue;
-                }
-                /* This fixes a rare case when the properties are cleared.
-                   The solution is to rely on SpringBoard to propagate the
-                   party information to RunningBoard. That's why we can use
-                   the party property regardless.
-
-                   This happens when installing the tweak and only killing
-                   SpringBoard. For some reason, RunningBoard seems to lose
-                   information when this happens. However, when simply executing
-                   `killall SpringBoard`, this is not happening. */
-                if (!state.immortal && (state.partying || excludeOtherApps)) {
-                    state.immortal = YES;
+            // Not having a delay here makes the apps not appear in the app switcher
+            // 0.25 was not enough
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC),
+                           dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l), ^{
+                BOOL excludeOtherApps = NO;
+                NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+                if (dict) {
+                    NSNumber *allApps = dict[kExcludeOtherApps];
+                    excludeOtherApps = allApps && [allApps boolValue];
                 }
 
-                int pid = process.pid;
-                if (state.immortal) {
-                    if (state.partying) {
-                        /* We need to wait a small delay, otherwise NextUp might show before
-                           the updated LS media widget's preferredContentSize has been used.
-                           This could probably be solved better but a small delay isn't noticeable. */
-                        dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.25 * NSEC_PER_SEC);
-                        dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
-                            NSString *bundleID = identity.embeddedApplicationIdentifier;
-                            FBApplicationProcess *process = getProcessForPID(pid);
+                /* Go through all existing processes.
+                   Reattach any media playing process, reattach any extension
+                   (WebKit) process to its host process and kill any immortal
+                   app not playing media anymore. */
+                NSDictionary *states = [self getAllProcessStates];
+                for (RBSProcessIdentity *identity in states) {
+                    RBSProcessState *state = states[identity];
+                    RBSProcessHandle *process = state.process;
 
-                            SBApplication *app = [self reattachImmortalProcess:process
-                                                                      bundleID:bundleID
-                                                                           PID:pid];
-
-                            [self restoreMediaProcess:process app:app PID:pid];
-                            _immortalPartyingBundleID = bundleID;
-                        });
-                    } else if (process.hostProcess && process.hostProcess.currentState.partying) {
-                        [self reattachProcessHandleForPID:pid];
-                    } else if (excludeOtherApps) {
-                        dispatch_sync(dispatch_get_main_queue(), ^{
-                            FBApplicationProcess *process = getProcessForPID(pid);
-                            [self reattachImmortalProcess:process
-                                                 bundleID:identity.embeddedApplicationIdentifier
-                                                      PID:pid];
-                        });
-                    } else {
-                        // Kill any non-partying apps
-                        [self killApplicationWithPID:pid];
+                    // Don't process daemons
+                    if (!identity.embeddedApplication && !process.hostProcess.identity.embeddedApplication) {
+                        continue;
                     }
-                } else if (process.hostProcess && (process.hostProcess.currentState.immortal ||
-                                                   process.hostProcess.currentState.partying)) {
-                    /* Reconnect extension processes to their host processes
-                       (for example WebKit playing inside of MobileSafari). */
-                    [self reattachProcessHandleForPID:pid];
+                    /* This fixes a rare case when the properties are cleared.
+                       The solution is to rely on SpringBoard to propagate the
+                       party information to RunningBoard. That's why we can use
+                       the party property regardless.
+
+                       This happens when installing the tweak and only killing
+                       SpringBoard. For some reason, RunningBoard seems to lose
+                       information when this happens. However, when simply executing
+                       `killall SpringBoard`, this is not happening. */
+                    if (!state.immortal && (state.partying || excludeOtherApps)) {
+                        state.immortal = YES;
+                    }
+
+                    int pid = process.pid;
+                    if (state.immortal) {
+                        if (state.partying) {
+                            /* We need to wait a small delay, otherwise NextUp might show before
+                               the updated LS media widget's preferredContentSize has been used.
+                               This could probably be solved better but a small delay isn't noticeable.
+                               0.25 was fine for NextUp, but 0.5 was needed for apps to be killable by
+                               the app switcher. */
+                            dispatch_time_t dispatchTime = dispatch_time(DISPATCH_TIME_NOW, 0.25 * NSEC_PER_SEC);
+                            dispatch_after(dispatchTime, dispatch_get_main_queue(), ^{
+                                NSString *bundleID = identity.embeddedApplicationIdentifier;
+                                FBApplicationProcess *process = getProcessForPID(pid);
+
+                                SBApplication *app = [self reattachImmortalProcess:process
+                                                                          bundleID:bundleID
+                                                                               PID:pid];
+
+                                [self restoreMediaProcess:process app:app PID:pid];
+                                _immortalPartyingBundleID = bundleID;
+                            });
+                        } else if (process.hostProcess && process.hostProcess.currentState.partying) {
+                            [self reattachProcessHandleForPID:pid];
+                        } else if (excludeOtherApps) {
+                            dispatch_sync(dispatch_get_main_queue(), ^{
+                                FBApplicationProcess *process = getProcessForPID(pid);
+                                [self reattachImmortalProcess:process
+                                                     bundleID:identity.embeddedApplicationIdentifier
+                                                          PID:pid];
+                            });
+                        } else {
+                            // Kill any non-partying apps
+                            [self killApplicationWithPID:pid];
+                        }
+                    } else if (process.hostProcess && (process.hostProcess.currentState.immortal ||
+                                                       process.hostProcess.currentState.partying)) {
+                        /* Reconnect extension processes to their host processes
+                           (for example WebKit playing inside of MobileSafari). */
+                        [self reattachProcessHandleForPID:pid];
+                    }
                 }
-            }
+            });
 
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(nowPlayingAppChanged:)
@@ -217,6 +224,8 @@ static inline void setRunning(BOOL running) {
                                                        object:nil];
         }
     );
+
+    return self;
 }
 
 - (void)reattachProcessHandleForPID:(int)pid {
