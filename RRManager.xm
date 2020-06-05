@@ -5,10 +5,69 @@
 #import "FrontBoard.h"
 #import "SpringBoard.h"
 #import "SettingsKeys.h"
+#import "DRMValidateOptions.mm"
 
 #define kSBSpringBoardDidLaunchNotification "SBSpringBoardDidLaunchNotification"
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 #define kKilledByAppSwitcher 1
+
+extern RRManager *manager;
+
+%group PackagePirated
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        showPiracyAlert(packageShown$bs());
+    });
+}
+
+%end
+%end
+
+
+%group Welcome
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
+}
+
+%end
+%end
+
+
+%group CheckTrialEnded
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+
+    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
+        [manager setTrialEnded];
+        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
+    }
+}
+
+%end
+%end
+
+
+__attribute__((always_inline, visibility("hidden")))
+static inline void initTrial() {
+    %init(CheckTrialEnded);
+}
+
+inline void initWelcome() {
+    %init(Welcome);
+}
+
+extern void init();
+
 
 
 static inline FBApplicationProcess *getProcessForPID(int pid) {
@@ -24,9 +83,42 @@ static inline void setRunning(BOOL running) {
                           error:nil];
 }
 
+
 @implementation RRManager
 
-- (void)setup {
+- (id)init {
+    setRunning(NO);
+
+    if (fromUntrustedSource(package$bs())) {
+        %init(PackagePirated);
+        return nil;
+    }
+
+    self = [super init];
+
+    /* License check – if no license found, present message.
+       If no valid license found, do not init. */
+    switch (check_lic(licensePath$bs(), package$bs())) {
+        case CheckNoLicense:
+            initWelcome();
+            return self;
+        case CheckInvalidTrialLicense:
+            initTrial();
+            return self;
+        case CheckValidTrialLicense:
+            initTrial();
+            break;
+        case CheckValidLicense:
+            break;
+        case CheckInvalidLicense:
+        case CheckUDIDsDoNotMatch:
+        default:
+            // In case the user is running a trial license and then removes it
+            [self setTrialEnded];
+            return self;
+    }
+    // ---
+    init();
     setRunning(YES);
 
     int token;
