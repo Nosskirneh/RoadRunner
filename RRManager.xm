@@ -309,29 +309,6 @@ static inline void setRunning(BOOL running) {
     notify_post(kRoadRunnerRestoredMediaProcess);
 }
 
-/* Use this if users start to reach out saying tweaks depending
-   on the media artwork doesn't work right away, such as CCArtwork.
-   This has to be issued at least 1.5 after SB loaded as the
-   MediaRemote callbacks otherwise don't fire. */
-// - (void)forceMediaUpdate {
-//     MRMediaRemoteGetNowPlayingApplicationIsPlaying(dispatch_get_main_queue(), ^(BOOL isPlaying) {
-//         if (isPlaying) {
-//             // This causes a short stutter when listening to Music.app
-//             // for example and with other clients the delay isn't long
-//             // enough for it to be a complete stop, but the volume is ducking.
-//             MRMediaRemoteSendCommand(kMRPause, nil);
-//             MRMediaRemoteSendCommand(kMRPlay, nil);
-//         } else {
-//             MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef info) {
-//                 NSNumber *elapsedTime = ((__bridge NSDictionary *)info)[(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime];
-//                 if (elapsedTime) {
-//                     MRMediaRemoteSetElapsedTime([elapsedTime floatValue]);
-//                 }
-//             });
-//         }
-//     });
-// }
-
 /* Reattach a process with a specific bundleID and PID. */
 - (SBApplication *)reattachImmortalProcess:(FBApplicationProcess *)process
                                   bundleID:(NSString *)bundleID
