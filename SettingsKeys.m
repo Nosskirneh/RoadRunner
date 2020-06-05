@@ -1,2 +1,5 @@
 NSString *const kEnabled = @"enabled";
-NSString *const kExcludeAllApps = @"excludeAllApps";
+
+NSString *const kIsWhitelist = @"isWhitelist";
+NSString *const kExcludeOtherApps = @"excludeOtherApps";
+NSString *const kListedApps = @"listedApps";

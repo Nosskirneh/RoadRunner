@@ -18,8 +18,6 @@
 @property (retain) UISlider *control;
 @end
 
-#define kRequiresRespring @"requiresRespring"
-#define kRequiresAppRestart @"requiresAppRestart"
 
 @implementation RRSettingsListController
 
@@ -107,6 +105,11 @@
 
         [self preferenceValueChanged:pickedValue specifier:specifier];
     }];
+}
+
+- (void)setEnabled:(BOOL)enabled forSpecifierWithID:(NSString *)identifier {
+    PSSpecifier *specifier = [self specifierForID:identifier];
+    [self setEnabled:enabled forSpecifier:specifier];
 }
 
 - (void)setEnabled:(BOOL)enabled forSpecifier:(PSSpecifier *)specifier {

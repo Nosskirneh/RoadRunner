@@ -2,4 +2,24 @@
 #define kSettingsChanged "se.nosskirneh.roadrunner.settings-changed"
 
 extern NSString *const kEnabled;
-extern NSString *const kExcludeAllApps;
+
+extern NSString *const kIsWhitelist;
+extern NSString *const kExcludeOtherApps;
+extern NSString *const kListedApps;
+
+
+
+#define kPostNotification @"PostNotification"
+#define kIconImage @"iconImage"
+#define kKey @"key"
+#define kID @"id"
+#define kDefault @"default"
+#define kCell @"cell"
+#define kEnabled @"enabled"
+#define kFooterText @"footerText"
+#define kAction @"action"
+#define kLabel @"label"
+
+
+#define kRequiresRespring @"requiresRespring"
+#define kRequiresAppRestart @"requiresAppRestart"

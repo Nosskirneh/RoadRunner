@@ -7,6 +7,26 @@
 #import <notify.h>
 #import "../../TwitterStuff/Prompt.h"
 #import "../SettingsKeys.h"
+#import "RRAppListController.h"
+
+
+// Header
+@interface RRSettingsHeaderCell : PSTableCell {
+    UILabel *_label;
+}
+@end
+
+// Colorful UISwitches
+@interface PSSwitchTableCell : PSControlTableCell
+- (id)initWithStyle:(int)style reuseIdentifier:(id)identifier specifier:(id)specifier;
+@end
+
+@interface RRSwitchTableCell : PSSwitchTableCell
+@end
+
+
+@interface RRColorButtonCell : PSTableCell
+@end
 
 #define kPostNotification @"PostNotification"
 
@@ -32,20 +52,185 @@
 }
 
 - (NSArray *)specifiers {
-    if (!_specifiers)
-        _specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
+    if (_specifiers)
+        return _specifiers;
 
-    // Add license specifier
-    NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), kPrefPath,
-                                   package$bs(), licenseFooterText$bs(), trialFooterText$bs());
+    NSMutableArray *specifiers = [NSMutableArray new];
 
-    return _specifiers;
+    PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:nil
+                                                            target:nil
+                                                               set:nil
+                                                               get:nil
+                                                            detail:nil
+                                                              cell:PSGroupCell
+                                                              edit:nil];
+    [specifier setProperty:NSStringFromClass(RRSettingsHeaderCell.class) forKey:@"headerCellClass"];
+    [specifiers addObject:specifier];
+
+    specifier = [self createSwitchCellWithLabel:@"Enabled" default:YES key:kEnabled requiresRespring:YES notification:NO];
+    [specifiers addObject:specifier];
+
+    PSSpecifier *applistSpecifier = [PSSpecifier preferenceSpecifierNamed:@"Listed apps"
+                                                                   target:self
+                                                                      set:@selector(setPreferenceValue:specifier:)
+                                                                      get:@selector(readPreferenceValue:)
+                                                                   detail:RRAppListController.class
+                                                                     cell:PSLinkCell
+                                                                     edit:nil];
+    [applistSpecifier setProperty:kListedApps forKey:kID];
+
+    PSSpecifier *listedAppsGroupSpecifier = [self createGroupCellWithLabel:@"Other apps" footerText:nil];
+    NSString *listedAppsFooterText = @"If \"Exclude other apps\" is disabled, RoadRunner will only exclude the now playing app. "\
+                                      "If enabled, keep in mind that you need to manually restart apps if a tweak that targets "\
+                                      "them has been installed or updated. Also, beware that excluding of package managers may "\
+                                      "cause weird behavior the next time opening them. \n\n"\
+                                      "Whitelist: only listed apps will be excluded.\n"\
+                                      "Blacklist: all listed apps will be excluded aside from the listed ones.";
+    [specifiers addObject:listedAppsGroupSpecifier];
+
+    specifier = [self createSwitchCellWithLabel:@"Exclude other apps" default:NO key:kExcludeOtherApps requiresRespring:NO notification:YES];
+    [specifiers addObject:specifier];
+
+    void *dylibLink = dlopen("/usr/lib/libapplist.dylib", RTLD_NOW);
+    if (dylibLink == NULL) {
+        [applistSpecifier setProperty:@NO forKey:kEnabled];
+        listedAppsFooterText = [listedAppsFooterText stringByAppendingString:@"\n\nInstall AppList to whitelist or blacklist apps."];
+    }
+    [listedAppsGroupSpecifier setProperty:listedAppsFooterText forKey:kFooterText];
+
+
+    specifier = [PSSpecifier preferenceSpecifierNamed:nil
+                                               target:self
+                                                  set:@selector(setPreferenceValue:specifier:)
+                                                  get:@selector(readPreferenceValue:)
+                                               detail:nil
+                                                 cell:PSSegmentCell
+                                                 edit:nil];
+    [specifier setProperty:kIsWhitelist forKey:kKey];
+    [specifier setProperty:kIsWhitelist forKey:kID];
+    [specifier setProperty:@YES forKey:kDefault];
+    [specifier setValues:@[@YES, @NO] titles:@[@"Whitelist", @"Blacklist"]];
+
+    [specifiers addObject:specifier];
+    [specifiers addObject:applistSpecifier];
+
+    specifier = [self createGroupCellWithLabel:@"Other" footerText:@"© 2020 Andreas Henriksson"];
+    [specifier setProperty:@1 forKey:@"footerAlignment"];
+    [specifiers addObject:specifier];
+
+    [specifiers addObject:[self createButtonCellWithLabel:@"Check out my other tweaks"
+                                                 selector:@selector(myTweaks)]];
+    [specifiers addObject:[self createButtonCellWithLabel:@"Follow me on Twitter"
+                                                 selector:@selector(followTwitter)]];
+    [specifiers addObject:[self createButtonCellWithLabel:@"Discord server"
+                                                 selector:@selector(discordServer)]];
+    [specifiers addObject:[self createButtonCellWithLabel:@"Icon by @bossgfx_"
+                                                 selector:@selector(iconCredits)]];
+    [specifiers addObject:[self createButtonCellWithLabel:@"Email me"
+                                                 selector:@selector(sendEmail)]];
+
+    // Add license specifiers
+    specifiers = addDRMSpecifiers(specifiers, self, licensePath$bs(), kPrefPath,
+                                  package$bs(), licenseFooterText$bs(), trialFooterText$bs());
+
+    _specifiers = specifiers;
+    return specifiers;
+}
+
+- (PSSpecifier *)createSwitchCellWithLabel:(NSString *)label
+                                   default:(BOOL)def
+                                       key:(NSString *)key
+                          requiresRespring:(BOOL)requiresRespring
+                              notification:(BOOL)notification {
+    PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:label
+                                                            target:self
+                                                               set:@selector(setPreferenceValue:specifier:)
+                                                               get:@selector(readPreferenceValue:)
+                                                            detail:nil
+                                                              cell:PSSwitchCell
+                                                              edit:nil];
+    [specifier setProperty:RRSwitchTableCell.class forKey:@"cellClass"];
+    [specifier setProperty:@(def) forKey:kDefault];
+    [specifier setProperty:key forKey:kKey];
+    [specifier setProperty:key forKey:kID];
+    if (requiresRespring) {
+        [specifier setProperty:@YES forKey:kRequiresRespring];
+    }
+
+    if (notification) {
+        [specifier setProperty:@kSettingsChanged forKey:kPostNotification];
+    }
+    return specifier;
+}
+
+- (PSSpecifier *)createButtonCellWithLabel:(NSString *)label selector:(SEL)selector {
+    PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:label
+                                                            target:nil
+                                                               set:nil
+                                                               get:nil
+                                                            detail:nil
+                                                              cell:PSButtonCell
+                                                              edit:nil];
+    [specifier setProperty:RRColorButtonCell.class forKey:@"cellClass"];
+
+    if (selector) {
+        [specifier setProperty:NSStringFromSelector(selector) forKey:kAction];
+    }
+    return specifier;
+}
+
+- (PSSpecifier *)createGroupCellWithLabel:(NSString *)label
+                               footerText:(NSString *)footerText {
+    PSSpecifier *specifier = [PSSpecifier emptyGroupSpecifier];
+    [specifier setProperty:label forKey:kLabel];
+    if (footerText) {
+        [specifier setProperty:footerText forKey:kFooterText];
+        [specifier setProperty:@0 forKey:@"footerAlignment"];
+    }
+    return specifier;
 }
 
 - (void)loadView {
     [super loadView];
     presentFollowAlert(kPrefPath, self);
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    if (!self.statusAlert) {
+        self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
+                                                        notification:nil
+                                                              action:@selector(respring)
+                                                              target:self];
+        self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590
+                                                      saturation:1
+                                                      brightness:1
+                                                           alpha:0.9];
+        self.statusAlert.textColor = [UIColor whiteColor];
+    }
+}
+
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+    NSString *key = [specifier propertyForKey:kKey];
+    if ([key isEqualToString:kExcludeOtherApps] && (!preferences[key] || ![preferences[key] boolValue])) {
+        [super setEnabled:NO forSpecifierWithID:kListedApps];
+        [super setEnabled:NO forSpecifierWithID:kIsWhitelist];
+    }
+
+    return [super readPreferenceValue:specifier];
+}
+
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+    NSString *key = [specifier propertyForKey:kKey];
+    if ([key isEqualToString:kExcludeOtherApps]) {
+        BOOL enable = [value boolValue];
+        [super setEnabled:enable forSpecifierWithID:kListedApps];
+        [super setEnabled:enable forSpecifierWithID:kIsWhitelist];
+    }
+
+    [super setPreferenceValue:value specifier:specifier];
 }
 
 - (void)activate {
@@ -65,22 +250,6 @@
 
 - (void)trial {
     trial(licensePath$bs(), package$bs(), self);
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    if (!self.statusAlert) {
-        self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
-                                                        notification:nil
-                                                              action:@selector(respring)
-                                                              target:self];
-        self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590
-                                                      saturation:1
-                                                      brightness:1
-                                                           alpha:0.9];
-        self.statusAlert.textColor = [UIColor whiteColor];
-    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -131,15 +300,8 @@
 @end
 
 
-// Colorful UISwitches
-@interface PSSwitchTableCell : PSControlTableCell
-- (id)initWithStyle:(int)style reuseIdentifier:(id)identifier specifier:(id)specifier;
-@end
 
-@interface KPSwitchTableCell : PSSwitchTableCell
-@end
-
-@implementation KPSwitchTableCell
+@implementation RRSwitchTableCell
 
 - (id)initWithStyle:(int)style reuseIdentifier:(id)identifier specifier:(id)specifier {
     self = [super initWithStyle:style reuseIdentifier:identifier specifier:specifier];
@@ -151,13 +313,7 @@
 @end
 
 
-// Header
-@interface KPSettingsHeaderCell : PSTableCell {
-    UILabel *_label;
-}
-@end
-
-@implementation KPSettingsHeaderCell
+@implementation RRSettingsHeaderCell
 
 - (id)initWithSpecifier:(PSSpecifier *)specifier {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"headerCell" specifier:specifier];
@@ -215,10 +371,6 @@
     return 140.f;
 }
 
-@end
-
-
-@interface RRColorButtonCell : PSTableCell
 @end
 
 

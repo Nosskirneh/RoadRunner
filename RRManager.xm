@@ -47,11 +47,11 @@ static inline void setRunning(BOOL running) {
                 notify_post(kRoadRunnerSpringBoardRestarted);
             });
 
-            BOOL excludeAllApps = NO;
+            BOOL excludeOtherApps = NO;
             NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
             if (dict) {
-                NSNumber *allApps = dict[kExcludeAllApps];
-                excludeAllApps = allApps && [allApps boolValue];
+                NSNumber *allApps = dict[kExcludeOtherApps];
+                excludeOtherApps = allApps && [allApps boolValue];
             }
 
             /* Go through all existing processes.
@@ -76,7 +76,7 @@ static inline void setRunning(BOOL running) {
                    SpringBoard. For some reason, RunningBoard seems to lose
                    information when this happens. However, when simply executing
                    `killall SpringBoard`, this is not happening. */
-                if (!state.immortal && (state.partying || excludeAllApps)) {
+                if (!state.immortal && (state.partying || excludeOtherApps)) {
                     state.immortal = YES;
                 }
 
@@ -100,7 +100,7 @@ static inline void setRunning(BOOL running) {
                         });
                     } else if (process.hostProcess && process.hostProcess.currentState.partying) {
                         [self reattachProcessHandleForPID:pid];
-                    } else if (excludeAllApps) {
+                    } else if (excludeOtherApps) {
                         dispatch_sync(dispatch_get_main_queue(), ^{
                             FBApplicationProcess *process = getProcessForPID(pid);
                             [self reattachImmortalProcess:process

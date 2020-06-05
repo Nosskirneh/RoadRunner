@@ -6,15 +6,35 @@
 #import <xpc/xpc.h>
 typedef NSObject<OS_xpc_object> *xpc_object_t;
 
-static BOOL excludeAllApps;
 static BOOL running;
+static BOOL excludeOtherApps;
+static BOOL isWhitelist;
+static NSSet *listedApps;
 
 static void loadPreferences() {
     NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
     if (dict) {
-        NSNumber *allApps = dict[kExcludeAllApps];
-        excludeAllApps = allApps && [allApps boolValue];
+        NSNumber *current = dict[kExcludeOtherApps];
+        excludeOtherApps = current && [current boolValue];
+
+        current = dict[kIsWhitelist];
+        isWhitelist = !current || [current boolValue];
+
+        NSArray *listedAppsList = dict[kListedApps] ? : @[];
+        listedApps = [NSSet setWithArray:listedAppsList];
     }
+}
+
+static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
+    if (!excludeOtherApps || !identity.embeddedApplication ||
+        [identity.embeddedApplicationIdentifier isEqualToString:@"com.apple.Spotlight"]) {
+        return NO;
+    }
+
+    if (!isWhitelist ^ [listedApps containsObject:identity.embeddedApplicationIdentifier]) {
+        return YES;
+    }
+    return NO;
 }
 
 %hook RBProcessManager
@@ -48,22 +68,29 @@ static void loadPreferences() {
 
 
 /* Exclude the now playing process from being killed.
-   If excludeAllApps is set, exclude all embedded applications
-   from termination. */
+   If excludeOtherApps is set, exclude all/some embedded
+   applications from termination, depending on settings. */
 %hook RBProcess
 
 - (BOOL)terminateWithContext:(RBSTerminateContext *)context {
+    if (!running) {
+        return %orig;
+    }
+
+    BOOL validReason = [context.explanation isEqualToString:@"/usr/libexec/backboardd respawn"] ||
+                       [context.explanation isEqualToString:@"SBRestartManager"] ||
+                       context.exceptionCode == kParentProcessDied;
+    if (!validReason) {
+        return %orig;
+    }
+
     RBSProcessHandle *handle = self.handle;
-    if (running &&
-        (([context.explanation isEqualToString:@"/usr/libexec/backboardd respawn"] ||
-          [context.explanation isEqualToString:@"SBRestartManager"] ||
-          context.exceptionCode == kParentProcessDied) &&
-         ((handle.partying || (self.hostProcess && self.hostProcess.handle.partying)) ||
-          (excludeAllApps && self.identity.embeddedApplication &&
-           ![self.identity.embeddedApplicationIdentifier isEqualToString:@"com.apple.Spotlight"])))) {
+    BOOL isPartying = handle.partying || (self.hostProcess && self.hostProcess.handle.partying);
+    if (isPartying || shouldExcludeAppForIdentity(self.identity)) {
         handle.immortal = YES;
         return YES;
     }
+
     return %orig;
 }
 

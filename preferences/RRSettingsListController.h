@@ -13,6 +13,7 @@
 @interface RRSettingsListController : PSListController {
     UIWindow *settingsView;
 }
+- (void)setEnabled:(BOOL)enabled forSpecifierWithID:(NSString *)identifier;
 - (void)setEnabled:(BOOL)enabled forSpecifier:(PSSpecifier *)specifier;
 - (void)setEnabled:(BOOL)enabled forSpecifiersAfterSpecifier:(PSSpecifier *)specifier;
 - (void)setEnabled:(BOOL)enabled forSpecifiersAfterSpecifier:(PSSpecifier *)specifier

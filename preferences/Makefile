@@ -1,3 +1,5 @@
+TARGET = iphone:clang:11.2
+
 ifdef DEBUG
 	ARCHS = arm64
 else
