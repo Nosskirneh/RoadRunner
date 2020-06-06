@@ -146,8 +146,8 @@ static inline void setRunning(BOOL running) {
                 BOOL excludeOtherApps = NO;
                 NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
                 if (dict) {
-                    NSNumber *allApps = dict[kExcludeOtherApps];
-                    excludeOtherApps = allApps && [allApps boolValue];
+                    NSNumber *otherApps = dict[kExcludeOtherApps];
+                    excludeOtherApps = otherApps && [otherApps boolValue];
                 }
 
                 /* Go through all existing processes.

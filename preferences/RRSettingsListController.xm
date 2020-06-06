@@ -23,7 +23,7 @@
 
 - (void)respring {
     killProcess("runningboardd");
-    killProcess("SpringBoard");
+    respring(NO);
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
