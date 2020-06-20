@@ -70,6 +70,23 @@
     specifier = [self createSwitchCellWithLabel:@"Enabled" default:YES key:kEnabled requiresRespring:YES notification:NO];
     [specifiers addObject:specifier];
 
+    PSSpecifier *modeGroupSpecifier = [self createGroupCellWithLabel:@"Mode" footerText:@"If \"Media apps\" is picked, RoadRunner will only exclude the now playing app. "\
+                                          "If other apps is picked, keep in mind that you need to manually restart apps if a tweak that targets "\
+                                          "them has been installed or updated. Also, beware that excluding of package managers may "\
+                                          "cause weird behavior the next time opening them."];
+    [specifiers addObject:modeGroupSpecifier];
+
+    specifier = [self createSegmentCellWithValues:@[@NO, @YES]
+                                           titles:@[@"Media apps", @"Media & Other apps"]
+                                          default:@NO
+                                              key:kExcludeOtherApps
+                                 requiresRespring:NO
+                                     notification:YES];
+    [specifiers addObject:specifier];
+
+    PSSpecifier *otherAppsGroupSpecifier = [self createGroupCellWithLabel:@"Other apps" footerText:nil];
+    [specifiers addObject:otherAppsGroupSpecifier];
+
     PSSpecifier *applistSpecifier = [PSSpecifier preferenceSpecifierNamed:@"Listed apps"
                                                                    target:self
                                                                       set:@selector(setPreferenceValue:specifier:)
@@ -79,37 +96,20 @@
                                                                      edit:nil];
     [applistSpecifier setProperty:kListedApps forKey:kID];
 
-    PSSpecifier *listedAppsGroupSpecifier = [self createGroupCellWithLabel:@"Other apps" footerText:nil];
-    NSString *listedAppsFooterText = @"If \"Exclude other apps\" is disabled, RoadRunner will only exclude the now playing app. "\
-                                      "If enabled, keep in mind that you need to manually restart apps if a tweak that targets "\
-                                      "them has been installed or updated. Also, beware that excluding of package managers may "\
-                                      "cause weird behavior the next time opening them. \n\n"\
-                                      "Whitelist: only listed apps will be excluded.\n"\
-                                      "Blacklist: all listed apps will be excluded aside from the listed ones.";
-    [specifiers addObject:listedAppsGroupSpecifier];
-
-    specifier = [self createSwitchCellWithLabel:@"Exclude other apps" default:NO key:kExcludeOtherApps requiresRespring:NO notification:YES];
-    [specifiers addObject:specifier];
-
-    void *dylibLink = dlopen("/usr/lib/libapplist.dylib", RTLD_NOW);
-    if (dylibLink == NULL) {
+    NSString *listedAppsFooterText = @"Whitelist: only listed apps will be kept alive.\n"\
+                                      "Blacklist: all apps will be kept alive aside from the listed ones.";
+    if (dlopen("/usr/lib/libapplist.dylib", RTLD_NOW) == NULL) {
         [applistSpecifier setProperty:@NO forKey:kEnabled];
         listedAppsFooterText = [listedAppsFooterText stringByAppendingString:@"\n\nInstall AppList to whitelist or blacklist apps."];
     }
-    [listedAppsGroupSpecifier setProperty:listedAppsFooterText forKey:kFooterText];
+    [otherAppsGroupSpecifier setProperty:listedAppsFooterText forKey:kFooterText];
 
-
-    specifier = [PSSpecifier preferenceSpecifierNamed:nil
-                                               target:self
-                                                  set:@selector(setPreferenceValue:specifier:)
-                                                  get:@selector(readPreferenceValue:)
-                                               detail:nil
-                                                 cell:PSSegmentCell
-                                                 edit:nil];
-    [specifier setProperty:kIsWhitelist forKey:kKey];
-    [specifier setProperty:kIsWhitelist forKey:kID];
-    [specifier setProperty:@YES forKey:kDefault];
-    [specifier setValues:@[@YES, @NO] titles:@[@"Whitelist", @"Blacklist"]];
+    specifier = [self createSegmentCellWithValues:@[@YES, @NO]
+                                           titles:@[@"Whitelist", @"Blacklist"]
+                                          default:@YES
+                                              key:kIsWhitelist
+                                 requiresRespring:NO
+                                     notification:YES];
 
     [specifiers addObject:specifier];
     [specifiers addObject:applistSpecifier];
@@ -135,6 +135,36 @@
 
     _specifiers = specifiers;
     return specifiers;
+}
+
+- (PSSpecifier *)createSegmentCellWithValues:(NSArray *)values
+                                      titles:(NSArray *)titles
+                                     default:(NSNumber *)def
+                                         key:(NSString *)key
+                            requiresRespring:(BOOL)requiresRespring
+                                notification:(BOOL)notification {
+    PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:nil
+                                                            target:self
+                                                               set:@selector(setPreferenceValue:specifier:)
+                                                               get:@selector(readPreferenceValue:)
+                                                            detail:nil
+                                                              cell:PSSegmentCell
+                                                              edit:nil];
+    [specifier setProperty:kIsWhitelist forKey:kKey];
+    [specifier setProperty:kIsWhitelist forKey:kID];
+    [specifier setValues:values titles:titles];
+
+    [specifier setProperty:def forKey:kDefault];
+    [specifier setProperty:key forKey:kKey];
+    [specifier setProperty:key forKey:kID];
+    if (requiresRespring) {
+        [specifier setProperty:@YES forKey:kRequiresRespring];
+    }
+
+    if (notification) {
+        [specifier setProperty:@kSettingsChanged forKey:kPostNotification];
+    }
+    return specifier;
 }
 
 - (PSSpecifier *)createSwitchCellWithLabel:(NSString *)label
@@ -181,8 +211,7 @@
 
 - (PSSpecifier *)createGroupCellWithLabel:(NSString *)label
                                footerText:(NSString *)footerText {
-    PSSpecifier *specifier = [PSSpecifier emptyGroupSpecifier];
-    [specifier setProperty:label forKey:kLabel];
+    PSSpecifier *specifier = [PSSpecifier groupSpecifierWithName:label];
     if (footerText) {
         [specifier setProperty:footerText forKey:kFooterText];
         [specifier setProperty:@0 forKey:@"footerAlignment"];
