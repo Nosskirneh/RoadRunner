@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+
 #define kPrefPath @"/var/mobile/Library/Preferences/se.nosskirneh.roadrunner.plist"
 #define kSettingsChanged "se.nosskirneh.roadrunner.settings-changed"
 

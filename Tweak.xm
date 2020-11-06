@@ -2,6 +2,7 @@
 #import "FrontBoard.h"
 #import "SpringBoard.h"
 #import "RRManager.h"
+#import <HBLog.h>
 
 
 RRManager *manager;

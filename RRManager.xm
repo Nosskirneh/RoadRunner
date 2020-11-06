@@ -1,4 +1,6 @@
 #import "RRManager.h"
+#import <UIKit/UIKit.h>
+#import <HBLog.h>
 #import "Common.h"
 #import <MediaRemote/MediaRemote.h>
 #import <notify.h>

@@ -1,5 +1,8 @@
 #import "Common.h"
 #import <notify.h>
+#import <Foundation/Foundation.h>
+#import <HBLog.h>
+#import <UIKit/UIKit.h>
 
 @interface UIWindow (Private)
 - (UIResponder *)firstResponder;

@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+#import <HBLog.h>
 #import "RRSettingsListController.h"
 #import <Preferences/Preferences.h>
 #import <UIKit/UITableViewLabel.h>

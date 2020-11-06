@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "../SettingsKeys.h"
 #import "RRAppListController.h"
 #import <Preferences/PSSpecifier.h>

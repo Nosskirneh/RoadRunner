@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+
 NSString *const kEnabled = @"enabled";
 
 NSString *const kIsWhitelist = @"isWhitelist";
