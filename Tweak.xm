@@ -26,6 +26,15 @@ RRManager *manager;
 %end
 
 
+%group iOS14
+%hookf(void, _handleDaemonDidStart, RBSConnection *self, SEL _cmd) {
+    %orig;
+
+    [manager handleDaemonDidStart];
+}
+%end
+
+%group iOS13
 %hook RBSConnection
 
 - (void)_handleDaemonDidStart {
@@ -34,6 +43,7 @@ RRManager *manager;
     [manager handleDaemonDidStart];
 }
 
+%end
 %end
 
 
@@ -54,6 +64,12 @@ RRManager *manager;
 
 void init() {
     %init;
+
+    if ([%c(RBSConnection) instancesRespondToSelector:@selector(_handleDaemonDidStart)]) {
+        %init(iOS13);
+    } else {
+        %init(iOS14, _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"));
+    }
 }
 
 %ctor {

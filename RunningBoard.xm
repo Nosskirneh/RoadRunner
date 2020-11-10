@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+#import <HBLog.h>
 #import "Common.h"
 #import "RunningBoard.h"
 #import "SettingsKeys.h"
@@ -100,15 +102,7 @@ static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
 /* Used to store properties within RunningBoard. */
 %hook RBSProcessHandle
 
-%property (nonatomic, assign) BOOL partying;
-%property (nonatomic, assign) BOOL immortal;
-
-- (id)initWithInstance:(id)instance
-              lifePort:(id)lifePort
-            bundleData:(id)bundleData
-              reported:(BOOL)reported {
-    self = %orig;
-
+static RBSProcessHandle *initProcessHandle(RBSProcessHandle *self) {
     // These have to be initialized to NO for some reason
     self.partying = NO;
     self.immortal = NO;
@@ -116,23 +110,61 @@ static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
     return self;
 }
 
-- (id)initWithBSXPCCoder:(BSXPCCoder *)coder {
-    self = %orig;
-
+static RBSProcessHandle *initProcessHandleWithCoder(RBSProcessHandle *self, BSXPCCoder *coder) {
     self.partying = [coder decodeBoolForKey:kPartyingProcess];
     self.immortal = [coder decodeBoolForKey:kImmortalProcess];
 
     return self;
 }
 
-- (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
-    %orig;
-
+static void encodeProcessHandle(RBSProcessHandle *self, BSXPCCoder *coder) {
     [coder encodeBool:self.partying forKey:kPartyingProcess];
     [coder encodeBool:self.immortal forKey:kImmortalProcess];
 }
 
+%property (nonatomic, assign) BOOL partying;
+%property (nonatomic, assign) BOOL immortal;
+
+%group RBSProcessHandle_iOS13
+- (id)initWithInstance:(id)instance
+              lifePort:(id)lifePort
+            bundleData:(id)bundleData
+              reported:(BOOL)reported {
+    return initProcessHandle(%orig);
+}
+
+- (id)initWithBSXPCCoder:(BSXPCCoder *)coder {
+    return initProcessHandleWithCoder(%orig, coder);
+}
+
+- (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
+    %orig;
+    encodeProcessHandle(self, coder);
+}
 %end
+
+%group RBSProcessHandle_iOS14
+- (id)initWithInstance:(id)instance
+            auditToken:(id)auditToken
+            bundleData:(id)bundleData
+           manageFlags:(unsigned char)manageFlags
+beforeTranslocationBundlePath:(id)beforeTranslocationBundlePath {
+    return initProcessHandle(%orig);
+}
+
+- (id)initWithRBSXPCCoder:(BSXPCCoder *)coder {
+    return initProcessHandleWithCoder(%orig, coder);
+}
+
+- (void)encodeWithRBSXPCCoder:(BSXPCCoder *)coder {
+    %orig;
+    encodeProcessHandle(self, coder);
+}
+%end
+
+%end
+
+
 
 
 /* Used to transfer information to SpringBoard as binary data.
@@ -142,23 +174,31 @@ static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
    propagated if using the latter. */
 %hook RBSProcessState
 
-- (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
-    %orig;
-
+static void encodeProcessStateWithCoder(RBSProcessState *self, BSXPCCoder *coder) {
     RBSProcessHandle *handle = self.process;
     [coder encodeBool:handle.partying forKey:kPartyingProcess];
     [coder encodeBool:handle.immortal forKey:kImmortalProcess];
 }
 
+%group RBSProcessState_iOS13
+- (void)encodeWithBSXPCCoder:(BSXPCCoder *)coder {
+    %orig;
+    encodeProcessStateWithCoder(self, coder);
+}
+%end
+
+%group RBSProcessState_iOS14
+- (void)encodeWithRBSXPCCoder:(BSXPCCoder *)coder {
+    %orig;
+    encodeProcessStateWithCoder(self, coder);
+}
+%end
+
 %end
 
 
-/* Messages for change of media app are sent using the stock
-   iOS XPC communication channel. Controlling the running state
-   from SpringBoard is also carried out through these messages. */
-%hook RBConnectionClient
-
-- (void)handleMessage:(xpc_object_t)xpc_dictionary {
+// Returns YES if the message is handled.
+BOOL handleMessage(RBConnectionClient *self, xpc_object_t xpc_dictionary) {
     const char *selName = xpc_dictionary_get_string(xpc_dictionary, "rbs_selector");
     if (selName != NULL) {
         if (strcmp(selName, sel_getName(NOW_PLAYING_APP_CHANGED_SELECTOR)) == 0) {
@@ -166,18 +206,40 @@ static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
             NSString *bundleID = identifier ? [NSString stringWithUTF8String:identifier] : nil;
             RBProcessManager *processManager = MSHookIvar<RBProcessManager *>(self, "_processManager");
             [processManager nowPlayingAppChanged:bundleID];
-            return;
+            return YES;
         }
 
         if (strcmp(selName, sel_getName(SET_RUNNING)) == 0) {
             running = xpc_dictionary_get_bool(xpc_dictionary, "rbs_argument_0");
-            return;
+            return YES;
         }
     }
+    return NO;
+}
 
+/* Messages for change of media app are sent using the stock
+   iOS XPC communication channel. Controlling the running state
+   from SpringBoard is also carried out through these messages. */
+%group iOS13
+%hook RBConnectionClient
+
+- (void)handleMessage:(xpc_object_t)xpc_dictionary {
+    if (handleMessage(self, xpc_dictionary)) {
+        return;
+    }
     %orig;
 }
 
+%end
+%end
+
+%group iOS14
+%hookf(void, handleMessage, RBConnectionClient *self, SEL _cmd, xpc_object_t xpc_dictionary) {
+    if (handleMessage(self, xpc_dictionary)) {
+        return;
+    }
+    %orig;
+}
 %end
 
 
@@ -197,4 +259,17 @@ static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
 
     // No need to check license here as SpringBoard checks that
     %init;
+    if ([%c(RBConnectionClient) instancesRespondToSelector:@selector(handleMessage:)]) {
+        %init(iOS13);
+    } else {
+        %init(iOS14, handleMessage = MSFindSymbol(NULL, "-[RBConnectionClient handleMessage:]"));
+    }
+
+    if ([%c(RBSProcessHandle) instancesRespondToSelector:@selector(encodeWithBSXPCCoder:)]) {
+        %init(RBSProcessHandle_iOS13);
+        %init(RBSProcessState_iOS13);
+    } else {
+        %init(RBSProcessHandle_iOS14);
+        %init(RBSProcessState_iOS14);
+    }
 }

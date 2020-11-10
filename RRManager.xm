@@ -8,6 +8,7 @@
 #import "SpringBoard.h"
 #import "SettingsKeys.h"
 #import "DRMValidateOptions.mm"
+#import <ptrauth-helpers.h>
 
 #define kSBSpringBoardDidLaunchNotification "SBSpringBoardDidLaunchNotification"
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
@@ -76,15 +77,28 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
     return [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
 }
 
-__attribute__((always_inline, visibility("hidden")))
-static inline void setRunning(BOOL running) {
-    RBSXPCMessage *message = [%c(RBSXPCMessage) messageForMethod:SET_RUNNING
-                                                       arguments:@[@(running)]];
-    [message invokeOnConnection:[[%c(RBSConnection) sharedInstance] _connection]
+static inline void sendMessageForMethodAndArguments(SEL method, NSArray *arguments) {
+    RBSXPCMessage *message = nil;
+    Class xpcMessageClass = %c(RBSXPCMessage);
+    if ([xpcMessageClass respondsToSelector:@selector(messageForMethod:arguments:)]) {
+        message = [xpcMessageClass messageForMethod:method arguments:arguments];
+    } else {
+        RBSXPCMessage *(* messageForMethodAndArguments)(Class, SEL, SEL, NSArray *) = (RBSXPCMessage *(*)(Class, SEL, SEL, NSArray *))make_sym_callable(MSFindSymbol(NULL, "+[RBSXPCMessage messageForMethod:arguments:]"));
+        message = messageForMethodAndArguments(xpcMessageClass, @selector(messageForMethod:arguments:), method, arguments);
+    }
+
+    RBSConnection *rbsConnection = [%c(RBSConnection) sharedInstance];
+    id connection = [rbsConnection respondsToSelector:@selector(_connection)] ?
+        [rbsConnection _connection] : MSHookIvar<id>(rbsConnection, "_connection");
+    [message invokeOnConnection:connection
                 withReturnClass:nil
                           error:nil];
 }
 
+__attribute__((always_inline, visibility("hidden")))
+static inline void setRunning(BOOL running) {
+    sendMessageForMethodAndArguments(SET_RUNNING, @[@(running)]);
+}
 
 @implementation RRManager
 
@@ -278,11 +292,7 @@ static inline void setRunning(BOOL running) {
         }
     }
 
-    RBSXPCMessage *message = [%c(RBSXPCMessage) messageForMethod:NOW_PLAYING_APP_CHANGED_SELECTOR
-                                                       arguments:bundleID ? @[bundleID] : nil];
-    [message invokeOnConnection:[[%c(RBSConnection) sharedInstance] _connection]
-                withReturnClass:nil
-                          error:nil];
+    sendMessageForMethodAndArguments(NOW_PLAYING_APP_CHANGED_SELECTOR, bundleID ? @[bundleID] : nil);
 }
 
 - (void)restoreMediaProcess:(FBApplicationProcess *)process app:(SBApplication *)app PID:(int)pid {
