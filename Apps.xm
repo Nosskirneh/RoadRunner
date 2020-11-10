@@ -50,9 +50,9 @@ static void addBecomeActiveObserver() {
 
     __weak NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     __weak __block id observer = [center addObserverForName:UIApplicationDidBecomeActiveNotification
-                                                                    object:nil
-                                                                     queue:nil
-                                                                usingBlock:^(NSNotification *notification) {
+                                                     object:nil
+                                                      queue:nil
+                                                 usingBlock:^(NSNotification *notification) {
         if (becomeActiveCompletion) {
             becomeActiveCompletion();
             becomeActiveCompletion = nil;
