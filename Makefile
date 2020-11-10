@@ -1,6 +1,8 @@
 TARGET = iphone:clang:11.2
-ifdef DEBUG
+ifdef 64
 	ARCHS = arm64
+else ifdef 64E
+	ARCHS = arm64e
 else
 	ARCHS = arm64 arm64e
 endif
@@ -24,6 +26,9 @@ after-install::
 else ifdef RB_ONLY
 after-install::
 		install.exec "killall -9 runningboardd"
+else ifdef APPS_ONLY
+after-install::
+		install.exec "killall -9 Spotify"
 else
 after-install::
 		install.exec "killall -9 runningboardd backboardd"
