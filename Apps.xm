@@ -4,13 +4,24 @@
 #import <HBLog.h>
 #import <UIKit/UIKit.h>
 
+@interface UIScene : UIResponder
+@end
+
+@interface UIWindowScene : UIScene
+@end
+
 @interface UIWindow (Private)
 - (UIResponder *)firstResponder;
+@property (assign, nonatomic) UIWindowScene *windowScene;
 @end
 
 @interface UIKeyboard : UIView
 @property (assign, getter=isMinimized, nonatomic) BOOL minimized;
 + (id)activeKeyboard;
+@end
+
+@interface _UISceneLifecycleMultiplexer : NSObject
++ (UIWindowScene *)mostActiveScene;
 @end
 
 static void addBecomeActiveObserver() {
@@ -21,6 +32,9 @@ static void addBecomeActiveObserver() {
         // after the application was excluded
         keyWindow.hidden = YES;
         [keyWindow makeKeyAndVisible];
+
+        // This fixes an issue where some apps (Spotify) would have a black window
+        [keyWindow setWindowScene:[%c(_UISceneLifecycleMultiplexer) mostActiveScene]];
 
         // This fixes an issue where the keyboard would not get visible
         UIResponder *responder = [keyWindow firstResponder];
