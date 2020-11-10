@@ -343,7 +343,6 @@ static inline void setRunning(BOOL running) {
     return app;
 }
 
-/* Kills a process as if the user quit it from the app switcher. */
 - (void)killApplicationWithPID:(int)pid {
     FBApplicationProcess *process = getProcessForPID(pid);
     [process killForReason:kKilledByAppSwitcher andReport:NO withDescription:nil];
