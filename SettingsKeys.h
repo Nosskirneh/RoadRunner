@@ -21,6 +21,10 @@ extern NSString *const kListedApps;
 #define kFooterText @"footerText"
 #define kAction @"action"
 #define kLabel @"label"
+#define kCellClass = @"cellClass"
+#define kFooterAlignment @"footerAlignment"
+#define kHeaderCellClass @"headerCellClass"
+#define kHeaderClass @"headerClass"
 
 
 #define kRequiresRespring @"requiresRespring"

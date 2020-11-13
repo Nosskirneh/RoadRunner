@@ -66,7 +66,7 @@
                                                             detail:nil
                                                               cell:PSGroupCell
                                                               edit:nil];
-    [specifier setProperty:NSStringFromClass(RRSettingsHeaderCell.class) forKey:@"headerCellClass"];
+    [specifier setProperty:NSStringFromClass(RRSettingsHeaderCell.class) forKey:@kHeaderCellClass];
     [specifiers addObject:specifier];
 
     specifier = [self createSwitchCellWithLabel:@"Enabled" default:YES key:kEnabled requiresRespring:YES notification:NO];
@@ -117,7 +117,7 @@
     [specifiers addObject:applistSpecifier];
 
     specifier = [self createGroupCellWithLabel:@"Other" footerText:@"© 2020 Andreas Henriksson"];
-    [specifier setProperty:@1 forKey:@"footerAlignment"];
+    [specifier setProperty:@1 forKey:kFooterAlignment];
     [specifiers addObject:specifier];
 
     [specifiers addObject:[self createButtonCellWithLabel:@"Check out my other tweaks"
@@ -181,7 +181,7 @@
                                                             detail:nil
                                                               cell:PSSwitchCell
                                                               edit:nil];
-    [specifier setProperty:RRSwitchTableCell.class forKey:@"cellClass"];
+    [specifier setProperty:RRSwitchTableCell.class forKey:kCellClass];
     [specifier setProperty:@(def) forKey:kDefault];
     [specifier setProperty:key forKey:kKey];
     [specifier setProperty:key forKey:kID];
@@ -203,7 +203,7 @@
                                                             detail:nil
                                                               cell:PSButtonCell
                                                               edit:nil];
-    [specifier setProperty:RRColorButtonCell.class forKey:@"cellClass"];
+    [specifier setProperty:RRColorButtonCell.class forKey:kCellClass];
 
     if (selector) {
         [specifier setProperty:NSStringFromSelector(selector) forKey:kAction];
@@ -216,7 +216,7 @@
     PSSpecifier *specifier = [PSSpecifier groupSpecifierWithName:label];
     if (footerText) {
         [specifier setProperty:footerText forKey:kFooterText];
-        [specifier setProperty:@0 forKey:@"footerAlignment"];
+        [specifier setProperty:@0 forKey:kFooterAlignment];
     }
     return specifier;
 }
@@ -347,7 +347,7 @@
 @implementation RRSettingsHeaderCell
 
 - (id)initWithSpecifier:(PSSpecifier *)specifier {
-    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"headerCell" specifier:specifier];
+    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kHeaderClass specifier:specifier];
     if (self) {
         _label = [[UILabel alloc] initWithFrame:[self frame]];
         [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
