@@ -10,7 +10,9 @@
 #import "../../TwitterStuff/Prompt.h"
 #import "../SettingsKeys.h"
 #import "RRAppListController.h"
+#import "LocalizableKeys.h"
 
+#define ICON_DESIGNER @"bossgfx_"
 
 // Header
 @interface RRSettingsHeaderCell : PSTableCell {
@@ -26,11 +28,8 @@
 @interface RRSwitchTableCell : PSSwitchTableCell
 @end
 
-
 @interface RRColorButtonCell : PSTableCell
 @end
-
-#define kPostNotification @"PostNotification"
 
 @interface RRRootListController : RRSettingsListController <PFStatusBarAlertDelegate, DRMDelegate>
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
@@ -43,7 +42,7 @@
 
 - (id)init {
     if (self == [super init]) {
-        UIBarButtonItem *respringButton = [[UIBarButtonItem alloc] initWithTitle:@"Respring"
+        UIBarButtonItem *respringButton = [[UIBarButtonItem alloc] initWithTitle:stringForKey(kRESPRING)
                                                                            style:UIBarButtonItemStylePlain
                                                                           target:self
                                                                           action:@selector(respring)];
@@ -66,30 +65,27 @@
                                                             detail:nil
                                                               cell:PSGroupCell
                                                               edit:nil];
-    [specifier setProperty:NSStringFromClass(RRSettingsHeaderCell.class) forKey:@kHeaderCellClass];
+    [specifier setProperty:NSStringFromClass(RRSettingsHeaderCell.class) forKey:kHeaderCellClass];
     [specifiers addObject:specifier];
 
-    specifier = [self createSwitchCellWithLabel:@"Enabled" default:YES key:kEnabled requiresRespring:YES notification:NO];
+    specifier = [self createSwitchCellWithLabel:stringForKey(kENABLED) default:YES key:kEnabled requiresRespring:YES notification:NO];
     [specifiers addObject:specifier];
 
-    PSSpecifier *modeGroupSpecifier = [self createGroupCellWithLabel:@"Mode" footerText:@"If \"Media apps\" is picked, RoadRunner will only exclude the now playing app. "\
-                                          "If other apps is picked, keep in mind that you need to manually restart apps if a tweak that targets "\
-                                          "them has been installed or updated. Also, beware that excluding of package managers may "\
-                                          "cause weird behavior the next time opening them."];
+    PSSpecifier *modeGroupSpecifier = [self createGroupCellWithLabel:stringForKey(kMODE) footerText:stringForKey(kMODE_FOOTER_TEXT)];
     [specifiers addObject:modeGroupSpecifier];
 
     specifier = [self createSegmentCellWithValues:@[@NO, @YES]
-                                           titles:@[@"Media apps", @"Media & Other apps"]
+                                           titles:@[stringForKey(kMEDIA_APPS), stringForKey(kMEDIA_AND_OTHER_APPS)]
                                           default:@NO
                                               key:kExcludeOtherApps
                                  requiresRespring:NO
                                      notification:YES];
     [specifiers addObject:specifier];
 
-    PSSpecifier *otherAppsGroupSpecifier = [self createGroupCellWithLabel:@"Other apps" footerText:nil];
+    PSSpecifier *otherAppsGroupSpecifier = [self createGroupCellWithLabel:stringForKey(kOTHER_APPS) footerText:nil];
     [specifiers addObject:otherAppsGroupSpecifier];
 
-    PSSpecifier *applistSpecifier = [PSSpecifier preferenceSpecifierNamed:@"Listed apps"
+    PSSpecifier *applistSpecifier = [PSSpecifier preferenceSpecifierNamed:stringForKey(kLISTED_APPS)
                                                                    target:self
                                                                       set:@selector(setPreferenceValue:specifier:)
                                                                       get:@selector(readPreferenceValue:)
@@ -98,16 +94,16 @@
                                                                      edit:nil];
     [applistSpecifier setProperty:kListedApps forKey:kID];
 
-    NSString *listedAppsFooterText = @"Whitelist: only listed apps will be kept alive.\n"\
-                                      "Blacklist: all apps will be kept alive aside from the listed ones.";
+    NSString *listedAppsFooterText = [NSString stringWithFormat:@"%@\n%@", stringForKey(kWHITELIST_DESCRIPTION),
+                                                                           stringForKey(kBLACKLIST_DESCRIPTION)];
     if (dlopen("/usr/lib/libapplist.dylib", RTLD_NOW) == NULL) {
         [applistSpecifier setProperty:@NO forKey:kEnabled];
-        listedAppsFooterText = [listedAppsFooterText stringByAppendingString:@"\n\nInstall AppList to whitelist or blacklist apps."];
+        listedAppsFooterText = [listedAppsFooterText stringByAppendingFormat:@"\n\n%@", stringForKey(kINSTALL_APPLIST)];
     }
     [otherAppsGroupSpecifier setProperty:listedAppsFooterText forKey:kFooterText];
 
     specifier = [self createSegmentCellWithValues:@[@YES, @NO]
-                                           titles:@[@"Whitelist", @"Blacklist"]
+                                           titles:@[stringForKey(kWHITELIST), stringForKey(kBLACKLIST)]
                                           default:@YES
                                               key:kIsWhitelist
                                  requiresRespring:NO
@@ -116,19 +112,19 @@
     [specifiers addObject:specifier];
     [specifiers addObject:applistSpecifier];
 
-    specifier = [self createGroupCellWithLabel:@"Other" footerText:@"© 2020 Andreas Henriksson"];
+    specifier = [self createGroupCellWithLabel:stringForKey(kOTHER) footerText:@"© 2020 Andreas Henriksson"];
     [specifier setProperty:@1 forKey:kFooterAlignment];
     [specifiers addObject:specifier];
 
-    [specifiers addObject:[self createButtonCellWithLabel:@"Check out my other tweaks"
+    [specifiers addObject:[self createButtonCellWithLabel:stringForKey(kOTHER_TWEAKS)
                                                  selector:@selector(myTweaks)]];
-    [specifiers addObject:[self createButtonCellWithLabel:@"Follow me on Twitter"
+    [specifiers addObject:[self createButtonCellWithLabel:stringForKey(kFOLLOW_TWITTER)
                                                  selector:@selector(followTwitter)]];
-    [specifiers addObject:[self createButtonCellWithLabel:@"Discord server"
+    [specifiers addObject:[self createButtonCellWithLabel:stringForKey(kDISCORD_SERVER)
                                                  selector:@selector(discordServer)]];
-    [specifiers addObject:[self createButtonCellWithLabel:@"Icon by @bossgfx_"
+    [specifiers addObject:[self createButtonCellWithLabel:[NSString stringWithFormat:stringForKey(kICON_BY), ICON_DESIGNER]
                                                  selector:@selector(iconCredits)]];
-    [specifiers addObject:[self createButtonCellWithLabel:@"Email me"
+    [specifiers addObject:[self createButtonCellWithLabel:stringForKey(kEMAIL_ME)
                                                  selector:@selector(sendEmail)]];
 
     // Add license specifiers
@@ -317,7 +313,7 @@
 }
 
 - (void)iconCredits {
-    openTwitterWithUsername(@"bossgfx_");
+    openTwitterWithUsername(ICON_DESIGNER);
 }
 
 - (void)discordServer {

@@ -5,6 +5,7 @@
 #import <Preferences/PSSpecifier.h>
 #import <AppList/AppList.h>
 #import <notify.h>
+#import "LocalizableKeys.h"
 
 @interface PSSpecifier (Missing)
 + (id)groupSpecifierWithHeader:(NSString *)header footer:(NSString *)footer;
@@ -18,12 +19,12 @@
         PSSpecifier *spec;
 
         // System applications
-        spec = [PSSpecifier groupSpecifierWithHeader:@"System Applications" footer:nil];
+        spec = [PSSpecifier groupSpecifierWithHeader:stringForKey(kSYSTEM_APPLICATIONS) footer:nil];
         [specifiers addObject:spec];
         [self addApplicationsToList:specifiers systemApps:YES];
 
         // User applications
-        spec = [PSSpecifier groupSpecifierWithHeader:@"User Applications" footer:nil];
+        spec = [PSSpecifier groupSpecifierWithHeader:stringForKey(kUSER_APPLICATIONS) footer:nil];
         [specifiers addObject:spec];
         [self addApplicationsToList:specifiers systemApps:NO];
 

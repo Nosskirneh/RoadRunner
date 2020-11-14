@@ -1,6 +1,7 @@
 #import "RRSettingsListController.h"
 #import <notify.h>
 #import "../../DRM/respring.xm"
+#import "LocalizableKeys.h"
 
 @interface UISegmentedControl (Missing)
 - (void)selectSegment:(int)index;
@@ -57,7 +58,7 @@
 
     NSNumber *restart = [specifier propertyForKey:kRequiresRespring];
     if (restart && [restart boolValue]) {
-        UIAlertAction *respringAction = [UIAlertAction actionWithTitle:@"Yes"
+        UIAlertAction *respringAction = [UIAlertAction actionWithTitle:stringForKey(kYES)
                                                                  style:UIAlertActionStyleDestructive
                                                                handler:^(UIAlertAction *action) {
                                             [self savePreferenceValue:value specifier:specifier];
@@ -66,25 +67,25 @@
 
         UIAlertAction *cancelAction = [self createCancelAction:specifier];
 
-        UIAlertAction *laterAction = [UIAlertAction actionWithTitle:@"No, I'll respring later"
+        UIAlertAction *laterAction = [UIAlertAction actionWithTitle:stringForKey(kRESPRING_LATER)
                                                               style:UIAlertActionStyleDefault
                                                             handler:^(UIAlertAction *action) {
             [self savePreferenceValue:value specifier:specifier];
         }];
-        [self presentAlertWithTitle:@"Restart of processes"
-                            message:@"Changing this setting requires SpringBoard and another process to be restarted. Do you wish to proceed?\n\nIf choosing to do it later, you need to restart through this settings panel."
+        [self presentAlertWithTitle:stringForKey(kRESTART_PROCESSES)
+                            message:stringForKey(kREQUIRES_RESPRING)
                             actions:@[respringAction, cancelAction, laterAction]];
         return;
     } else if ((restart = [specifier propertyForKey:kRequiresAppRestart]) && [restart boolValue]) {
-        [self presentOKAlertWithTitle:@"Restart of app"
-                              message:@"If the app was opened prior to changing this value, the app must be restarted for it to take effect."];
+        [self presentOKAlertWithTitle:stringForKey(kRESTART_APP)
+                              message:stringForKey(kREQUIRES_APP_RESTART)];
     }
 
     [self savePreferenceValue:value specifier:specifier];
 }
 
 - (UIAlertAction *)createCancelAction:(PSSpecifier *)specifier {
-    return [UIAlertAction actionWithTitle:@"No, revert change"
+    return [UIAlertAction actionWithTitle:stringForKey(kREVERT_CHANGE)
                                     style:UIAlertActionStyleCancel
                                   handler:^(UIAlertAction *action) {
         NSIndexPath *indexPath = [self indexPathForSpecifier:specifier];
@@ -160,7 +161,7 @@
                                                                    message:message
                                                             preferredStyle:UIAlertControllerStyleAlert];
 
-    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"OK"
+    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:stringForKey(kOK)
                                                             style:UIAlertActionStyleDefault
                                                           handler:nil];
     [alert addAction:defaultAction];

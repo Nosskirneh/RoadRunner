@@ -1,0 +1,65 @@
+<dict>
+    <key>RESPRING</key>
+    <string>Respring</string>
+    <key>ENABLED</key>
+    <string>Enabled</string>
+    <key>MODE</key>
+    <string>Mode</string>
+    <key>MODE_FOOTER_TEXT</key>
+    <string>If "Media apps" is picked, RoadRunner will only exclude the now playing app. If other apps is picked, keep in mind that you need to manually restart apps if a tweak that targets them has been installed or updated. Also, beware that excluding package managers may cause weird behavior the next time opening them.</string>
+    <key>MEDIA_APPS</key>
+    <string>Media apps</string>
+    <key>MEDIA_AND_OTHER_APPS</key>
+    <!-- &amp; equals & -->
+    <string>Media &amp; Other apps</string>
+    <key>OTHER_APPS</key>
+    <string>Other apps</string>
+    <key>LISTED_APPS</key>
+    <string>Listed apps</string>
+    <key>WHITELIST_DESCRIPTION</key>
+    <string>Whitelist: only listed apps will be kept alive.</string>
+    <key>BLACKLIST_DESCRIPTION</key>
+    <string>Blacklist: all apps will be kept alive aside from the listed ones.</string>
+    <key>INSTALL_APPLIST</key>
+    <string>Install AppList to whitelist or blacklist apps.</string>
+    <key>WHITELIST</key>
+    <string>Whitelist</string>
+    <key>BLACKLIST</key>
+    <string>Blacklist</string>
+    <key>OTHER</key>
+    <string>Other</string>
+    <key>OTHER_TWEAKS</key>
+    <string>Check out my other tweaks</string>
+    <key>FOLLOW_TWITTER</key>
+    <string>Follow me on twitter</string>
+    <key>DISCORD_SERVER</key>
+    <string>Discord server</string>
+    <!-- %@ will be replaced with the Twitter handle -->
+    <key>ICON_BY</key>
+    <string>Icon by %@</string>
+    <key>EMAIL_ME</key>
+    <string>Email me</string>
+
+    <key>YES</key>
+    <string>Yes</string>
+    <key>RESPRING_LATER</key>
+    <string>No, I'll respring later</string>
+    <key>RESTART_PROCESSES</key>
+    <string>Restart of processes</string>
+    <!-- Mind the \n\n here – they should be preserved (without any spaces before or after). -->
+    <key>REQUIRES_RESPRING</key>
+    <string>Changing this setting requires SpringBoard and another process to be restarted. Do you wish to proceed?\n\nIf choosing to do it later, you need to restart through this settings panel.</string>
+    <key>RESTART_APP</key>
+    <string>Restart of app</string>
+    <key>REQUIRES_APP_RESTART</key>
+    <string>If the app was opened prior to changing this value, the app must be restarted for it to take effect.</string>
+    <key>REVERT_CHANGE</key>
+    <string>No, revert change</string>
+    <key>OK</key>
+    <string>OK</string>
+
+    <key>SYSTEM_APPLICATIONS</key>
+    <string>System Applications</string>
+    <key>USER_APPLICATIONS</key>
+    <string>User Applications</string>
+</dict>
