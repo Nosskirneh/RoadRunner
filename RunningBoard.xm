@@ -198,7 +198,7 @@ static void encodeProcessStateWithCoder(RBSProcessState *self, BSXPCCoder *coder
 
 
 // Returns YES if the message is handled.
-BOOL handleMessage(RBConnectionClient *self, xpc_object_t xpc_dictionary) {
+static BOOL handleMessage(RBConnectionClient *self, xpc_object_t xpc_dictionary) {
     const char *selName = xpc_dictionary_get_string(xpc_dictionary, "rbs_selector");
     if (selName != NULL) {
         if (strcmp(selName, sel_getName(NOW_PLAYING_APP_CHANGED_SELECTOR)) == 0) {
