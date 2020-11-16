@@ -14,14 +14,23 @@ RRManager *manager;
 %property (nonatomic, assign) BOOL partying;
 %property (nonatomic, assign) BOOL immortal;
 
-- (id)initWithBSXPCCoder:(BSXPCCoder *)coder {
-    self = %orig;
-
+static RBSProcessState *initProcessStateWithCoder(RBSProcessState *self, BSXPCCoder *coder) {
     self.partying = [coder decodeBoolForKey:kPartyingProcess];
     self.immortal = [coder decodeBoolForKey:kImmortalProcess];
-
     return self;
 }
+
+%group RBSProcessState_iOS13
+- (id)initWithBSXPCCoder:(BSXPCCoder *)coder {
+    return initProcessStateWithCoder(%orig, coder);
+}
+%end
+
+%group RBSProcessState_iOS14
+- (id)initWithRBSXPCCoder:(BSXPCCoder *)coder {
+    return initProcessStateWithCoder(%orig, coder);
+}
+%end
 
 %end
 
@@ -69,6 +78,12 @@ void init() {
         %init(iOS13);
     } else {
         %init(iOS14, _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"));
+    }
+
+    if ([%c(RBSProcessState) instancesRespondToSelector:@selector(encodeWithBSXPCCoder:)]) {
+        %init(RBSProcessState_iOS13);
+    } else {
+        %init(RBSProcessState_iOS14);
     }
 }
 
