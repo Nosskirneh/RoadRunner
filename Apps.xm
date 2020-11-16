@@ -1,5 +1,5 @@
 #import "Common.h"
-#import <notify.h>
+#import "CommonApps.h"
 #import <Foundation/Foundation.h>
 #import <HBLog.h>
 #import <UIKit/UIKit.h>
@@ -24,44 +24,6 @@
 + (UIWindowScene *)mostActiveScene;
 @end
 
-static void addBecomeActiveObserver() {
-    __block void (^becomeActiveCompletion)() = ^{
-        UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
-
-        // This fixes an issue where the action menus would not appear
-        // after the application was excluded
-        keyWindow.hidden = YES;
-        [keyWindow makeKeyAndVisible];
-
-        // This fixes an issue where some apps (Spotify) would have a black window
-        [keyWindow setWindowScene:[%c(_UISceneLifecycleMultiplexer) mostActiveScene]];
-
-        // This fixes an issue where the keyboard would not get visible
-        UIResponder *responder = [keyWindow firstResponder];
-        if (responder) {
-            [responder resignFirstResponder];
-            ((UIKeyboard *)[%c(UIKeyboard) activeKeyboard]).minimized = YES;
-
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                [responder becomeFirstResponder];
-            });
-        }
-    };
-
-    __weak NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    __weak __block id observer = [center addObserverForName:UIApplicationDidBecomeActiveNotification
-                                                     object:nil
-                                                      queue:nil
-                                                 usingBlock:^(NSNotification *notification) {
-        if (becomeActiveCompletion) {
-            becomeActiveCompletion();
-            becomeActiveCompletion = nil;
-
-            [center removeObserver:observer];
-        }
-    }];
-}
-
 %ctor {
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *bundleID = [bundle bundleIdentifier];
@@ -81,13 +43,27 @@ static void addBecomeActiveObserver() {
                                                         @"com.apple.iMessageAppsViewService"]];
 
     if (![blacklistedBundleIDs containsObject:bundleID]) {
-        int token;
-        notify_register_dispatch(kRoadRunnerSpringBoardRestarted,
-            &token,
-            dispatch_get_main_queue(),
-            ^(int _) {
-                addBecomeActiveObserver();
+        addBecomeActiveObserver(^{
+            UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+
+            // This fixes an issue where the action menus would not appear
+            // after the application was excluded
+            keyWindow.hidden = YES;
+            [keyWindow makeKeyAndVisible];
+
+            // This fixes an issue where some apps (Spotify) would have a black window
+            [keyWindow setWindowScene:[%c(_UISceneLifecycleMultiplexer) mostActiveScene]];
+
+            // This fixes an issue where the keyboard would not get visible
+            UIResponder *responder = [keyWindow firstResponder];
+            if (responder) {
+                [responder resignFirstResponder];
+                ((UIKeyboard *)[%c(UIKeyboard) activeKeyboard]).minimized = YES;
+
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [responder becomeFirstResponder];
+                });
             }
-        );
+        });
     }
 }
