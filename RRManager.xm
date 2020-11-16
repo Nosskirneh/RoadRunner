@@ -281,15 +281,11 @@ static inline void setRunning(BOOL running) {
 
     if (pid) {
         int p = [pid intValue];
-        FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:p];
-        if (app) {
-            bundleID = app.bundleIdentifier;
-        } else {
-            FBProcess *process = [[%c(FBProcessManager) sharedInstance] processForPID:p];
-            if ([process isKindOfClass:%c(FBExtensionProcess)]) {
-                bundleID = ((FBExtensionProcess *)process).hostProcess.bundleIdentifier;
-            }
-        }
+        RBSProcessHandle *process = [%c(RBSProcessHandle) handleForKey:p fetchIfNeeded:YES];
+        if (process.hostProcess)
+            process = process.hostProcess;
+
+        bundleID = process.identity.embeddedApplicationIdentifier;
     }
 
     sendMessageForMethodAndArguments(NOW_PLAYING_APP_CHANGED_SELECTOR, bundleID ? @[bundleID] : nil);

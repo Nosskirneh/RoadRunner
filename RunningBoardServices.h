@@ -42,6 +42,7 @@ typedef enum RBSTaskState {
 @property (nonatomic, readonly) RBSProcessHandle *hostProcess;
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
 @property (nonatomic, readonly) int pid;
++ (id)handleForKey:(NSUInteger)pid fetchIfNeeded:(BOOL)fetchIfNeeded;
 @end
 
 
