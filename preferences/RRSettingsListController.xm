@@ -186,7 +186,7 @@
 
     // Tint
     settingsView = [[UIApplication sharedApplication] keyWindow];
-    settingsView.tintColor = KPColor;
+    settingsView.tintColor = RRColor;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

@@ -333,7 +333,7 @@
 - (id)initWithStyle:(int)style reuseIdentifier:(id)identifier specifier:(id)specifier {
     self = [super initWithStyle:style reuseIdentifier:identifier specifier:specifier];
     if (self)
-        [((UISwitch *)[self control]) setOnTintColor:KPColor];
+        [((UISwitch *)[self control]) setOnTintColor:RRColor];
     return self;
 }
 
@@ -405,7 +405,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    [self.textLabel setTextColor:KPColor];
+    [self.textLabel setTextColor:RRColor];
 }
 
 @end
