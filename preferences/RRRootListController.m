@@ -350,8 +350,7 @@
         [_label setAdjustsFontSizeToFitWidth:YES];
         [_label setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:48]];
 
-        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"RoadRunner"];
-
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:@"RoadRunner"];
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];
         [_label setBackgroundColor:[UIColor clearColor]];
