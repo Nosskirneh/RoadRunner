@@ -193,7 +193,7 @@
 
 - (PSSpecifier *)createButtonCellWithLabel:(NSString *)label selector:(SEL)selector {
     PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:label
-                                                            target:nil
+                                                            target:self
                                                                set:nil
                                                                get:nil
                                                             detail:nil
@@ -202,7 +202,7 @@
     [specifier setProperty:RRColorButtonCell.class forKey:kCellClass];
 
     if (selector) {
-        [specifier setProperty:NSStringFromSelector(selector) forKey:kAction];
+        specifier->action = selector;
     }
     return specifier;
 }
