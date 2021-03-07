@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BLACKLIST</key>
+	<string>블랙리스트</string>
+	<key>BLACKLIST_DESCRIPTION</key>
+	<string>블랙리스트: 포함된 앱을 제외한 모든 앱이 활성 상태로 유지됩니다.</string>
+	<key>DISCORD_SERVER</key>
+	<string>Discord 서버</string>
+	<key>EMAIL_ME</key>
+	<string>이메일</string>
+	<key>ENABLED</key>
+	<string>활성화</string>
+	<key>FOLLOW_TWITTER</key>
+	<string>Twitter 팔로우</string>
+	<key>ICON_BY</key>
+	<string>아이콘 by %@</string>
+	<key>INSTALL_APPLIST</key>
+	<string>앱을 화이트리스트 또는 블랙리스트에 추가하려면 AppList를 설치하십시오.</string>
+	<key>LISTED_APPS</key>
+	<string>포함된 앱</string>
+	<key>MEDIA_AND_OTHER_APPS</key>
+	<string>미디어 &amp; 다른 앱</string>
+	<key>MEDIA_APPS</key>
+	<string>미디어 앱</string>
+	<key>MODE</key>
+	<string>모드</string>
+	<key>MODE_FOOTER_TEXT</key>
+	<string>'미디어 앱'을 선택하면 RoadRunner는 지금 재생 중인 앱만 제외합니다. 다른 앱을 선택하면 해당 앱을 대상으로 하는 트윅이 설치되거나 업데이트된 경우 앱을 수동으로 다시 시작해야 합니다. 또한 패키지 관리자를 제외하면 다음에 열 때 이상한 동작이 발생할 수 있습니다.</string>
+	<key>OK</key>
+	<string>확인</string>
+	<key>OTHER</key>
+	<string>기타</string>
+	<key>OTHER_APPS</key>
+	<string>다른 앱</string>
+	<key>OTHER_TWEAKS</key>
+	<string>다른 트윅 살펴보기</string>
+	<key>REQUIRES_APP_RESTART</key>
+	<string>이 값을 변경하기 전에 앱이 열렸으면 적용을 위해 앱을 다시 시작해야 합니다.</string>
+	<key>REQUIRES_RESPRING</key>
+	<string>이 설정을 변경하려면 스프링보드 및 다른 프로세스를 다시 시작해야 합니다. 계속하시겠습니까?
+
+나중에 선택하려면 이 설정 패널을 통해 다시 시작해야 합니다.</string>
+	<key>RESPRING</key>
+	<string>리스프링</string>
+	<key>RESPRING_LATER</key>
+	<string>아니요, 나중에 리스프링하겠습니다.</string>
+	<key>RESTART_APP</key>
+	<string>앱 다시 시작</string>
+	<key>RESTART_PROCESSES</key>
+	<string>프로세스 다시 시작</string>
+	<key>REVERT_CHANGE</key>
+	<string>아니요, 변경을 취소합니다.</string>
+	<key>SETTINGS</key>
+	<string>설정</string>
+	<key>SYSTEM_APPLICATIONS</key>
+	<string>시스템 응용 프로그램</string>
+	<key>USER_APPLICATIONS</key>
+	<string>사용자 응용 프로그램</string>
+	<key>WHITELIST</key>
+	<string>화이트리스트</string>
+	<key>WHITELIST_DESCRIPTION</key>
+	<string>화이트리스트: 포함된 앱만 유지됩니다.</string>
+	<key>YES</key>
+	<string>예</string>
+</dict>
+</plist>
