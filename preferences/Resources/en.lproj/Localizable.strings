@@ -46,9 +46,10 @@
     <string>No, I'll respring later</string>
     <key>RESTART_PROCESSES</key>
     <string>Restart of processes</string>
-    <!-- Mind the \n\n here – they should be preserved (without any spaces before or after). -->
     <key>REQUIRES_RESPRING</key>
-    <string>Changing this setting requires SpringBoard and another process to be restarted. Do you wish to proceed?\n\nIf choosing to do it later, you need to restart through this settings panel.</string>
+    <string>Changing this setting requires SpringBoard and another process to be restarted. Do you wish to proceed?
+
+If choosing to do it later, you need to restart through this settings panel.</string>
     <key>RESTART_APP</key>
     <string>Restart of app</string>
     <key>REQUIRES_APP_RESTART</key>
