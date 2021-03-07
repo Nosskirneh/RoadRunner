@@ -24,10 +24,27 @@
 + (UIWindowScene *)mostActiveScene;
 @end
 
+@interface SFAuthenticationViewController : SFSafariViewController
+@property (assign, nonatomic) SFAuthenticationSession *presentationDelegate;
+- (void)_presentViewController;
+@end
 
-static BOOL didConnectToScene;
+SFAuthenticationViewController *safariAuthViewController;
+
+%hook SFAuthenticationViewController
+
+- (void)_presentViewController {
+    %orig;
+    safariAuthViewController = self;
+}
+
+%end
+
+
 
 %group NoNewWindowFix
+static BOOL didConnectToScene;
+
 %hook SceneDelegate
 
 // In some apps, a new window is loaded here in this method.
@@ -86,8 +103,8 @@ static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
     NSSet *blacklistedBundleIDs = [NSSet setWithArray:@[@"com.apple.springboard",
                                                         @"com.apple.Spotlight",
                                                         @"com.apple.iMessageAppsViewService"]];
-
     if (![blacklistedBundleIDs containsObject:bundleID]) {
+        %init;
         addBecomeActiveObserver(^{
             UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
 
@@ -109,6 +126,14 @@ static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                     [responder becomeFirstResponder];
+                });
+            }
+
+            if (safariAuthViewController) {
+                SFAuthenticationSession *safariAuthSession = safariAuthViewController.presentationDelegate;
+                [safariAuthSession cancel];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [safariAuthViewController _presentViewController];
                 });
             }
         });
