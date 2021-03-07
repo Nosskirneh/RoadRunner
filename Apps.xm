@@ -97,7 +97,9 @@ static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
             [keyWindow makeKeyAndVisible];
 
             // This fixes an issue where some apps (Spotify) would have a black window
-            [keyWindow setWindowScene:[%c(_UISceneLifecycleMultiplexer) mostActiveScene]];
+            if (!keyWindow.windowScene) {
+                [keyWindow setWindowScene:[%c(_UISceneLifecycleMultiplexer) mostActiveScene]];
+            }
 
             // This fixes an issue where the keyboard would not get visible
             UIResponder *responder = [keyWindow firstResponder];
