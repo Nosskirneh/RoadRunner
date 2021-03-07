@@ -24,6 +24,51 @@
 + (UIWindowScene *)mostActiveScene;
 @end
 
+
+static BOOL didConnectToScene;
+
+%group NoNewWindowFix
+%hook SceneDelegate
+
+// In some apps, a new window is loaded here in this method.
+// If that has already been done, ignore this call.
+- (void)scene:(UIScene *)scene willConnectToSession:(id)session options:(id)connectionOptions {
+    if (!didConnectToScene) {
+        didConnectToScene = YES;
+        %orig;
+    }
+}
+
+%end
+%end
+
+
+@interface UISceneConfiguration : NSObject
+- (Class)delegateClass;
+@end
+
+static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
+    if (delegateClass) {
+        %init(NoNewWindowFix, SceneDelegate = delegateClass);
+    }
+}
+
+%hook UISceneConfiguration
+
+- (id)initWithName:(id)name sessionRole:(id)sessionRole {
+    self = %orig;
+    tryInitSceneDelegateHooksForClass([self delegateClass]);
+    return self;
+}
+
+- (void)setDelegateClass:(Class)delegateClass {
+    %orig;
+    tryInitSceneDelegateHooksForClass(delegateClass);
+}
+
+%end
+
+
 %ctor {
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *bundleID = [bundle bundleIdentifier];
