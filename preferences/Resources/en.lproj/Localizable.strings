@@ -39,7 +39,6 @@
     <string>Icon by %@</string>
     <key>EMAIL_ME</key>
     <string>Email me</string>
-
     <key>YES</key>
     <string>Yes</string>
     <key>RESPRING_LATER</key>
@@ -58,7 +57,6 @@ If choosing to do it later, you need to restart through this settings panel.</st
     <string>No, revert change</string>
     <key>OK</key>
     <string>OK</string>
-
     <key>SYSTEM_APPLICATIONS</key>
     <string>System Applications</string>
     <key>USER_APPLICATIONS</key>

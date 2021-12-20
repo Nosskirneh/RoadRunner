@@ -1,0 +1,63 @@
+<dict>
+    <key>RESPRING</key>
+    <string>Респринг</string>
+    <key>ENABLED</key>
+    <string>Включено</string>
+    <key>MODE</key>
+    <string>Режим</string>
+    <key>MODE_FOOTER_TEXT</key>
+    <string>Если выбрано "Медийные приложения", то RoadRunner сохранит только проигрывающее музыку приложение в течение респринга. Если выбрана другая опция, то может понадобиться перезапустить выбранную программу, если респринг произошёл после установки или обновления твика, затрагивающего эту программу. Также не рекоммендуется использовать RoadRunner на менеджерах пакетов (cydia, sileo и другие), так как это может привести к их непредсказуемому поведению.</string>
+    <key>MEDIA_APPS</key>
+    <string>Медийные приложения</string>
+    <key>MEDIA_AND_OTHER_APPS</key>
+    <string>Медийные и другие приложения</string>
+    <key>OTHER_APPS</key>
+    <string>Другие приложения</string>
+    <key>LISTED_APPS</key>
+    <string>Список приложений</string>
+    <key>WHITELIST_DESCRIPTION</key>
+    <string>Белый список: только выбранные программы не будут убиты.</string>
+    <key>BLACKLIST_DESCRIPTION</key>
+    <string>Чёрный список: никакие программы не будут убиты, кроме выбранных.</string>
+    <key>INSTALL_APPLIST</key>
+    <string>Установите AppList, чтобы добавлять программы в чёрный или белый списки.</string>
+    <key>WHITELIST</key>
+    <string>Белый список</string>
+    <key>BLACKLIST</key>
+    <string>Чёрный список</string>
+    <key>OTHER</key>
+    <string>Прочее</string>
+    <key>OTHER_TWEAKS</key>
+    <string>Посмотрите мои другие твики</string>
+    <key>FOLLOW_TWITTER</key>
+    <string>Подпишитесь на меня в твиттере</string>
+    <key>DISCORD_SERVER</key>
+    <string>Сервер в дискорде</string>
+    <!-- %@ will be replaced with the Twitter handle -->
+    <key>ICON_BY</key>
+    <string>Иконка сделана %@</string>
+    <key>EMAIL_ME</key>
+    <string>Отправьте мне имейл</string>
+    <key>YES</key>
+    <string>Да</string>
+    <key>RESPRING_LATER</key>
+    <string>Нет, я сделаю респринг позже</string>
+    <key>RESTART_PROCESSES</key>
+    <string>Перезапуск процессов</string>
+    <key>REQUIRES_RESPRING</key>
+    <string>Изменение этой настройки требует респринг и перезапуск процесса, связанного с твиком. Хотите продолжить?
+
+Если выбрать сделать респринг позже, то это будет необходимо сделать здесь же, в настройках RoadRunner.</string>
+    <key>RESTART_APP</key>
+    <string>Перезапуск приложения</string>
+    <key>REQUIRES_APP_RESTART</key>
+    <string>Если приложение было открыто до изменения этой настройки, то требуется перезапустить это приложение, чтобы изменения вступили в силу.</string>
+    <key>REVERT_CHANGE</key>
+    <string>Нет, отменить изменения</string>
+    <key>OK</key>
+    <string>ОК</string>
+    <key>SYSTEM_APPLICATIONS</key>
+    <string>Системные приложения</string>
+    <key>USER_APPLICATIONS</key>
+    <string>Пользовательские приложения</string>
+</dict>
