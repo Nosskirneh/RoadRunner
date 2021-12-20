@@ -1,2 +1,3 @@
+#!/usr/bin/env bash
 echo "Thanks for installing!"
 killall runningboardd || echo "Target process was not running."

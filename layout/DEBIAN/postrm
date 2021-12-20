@@ -1,1 +1,2 @@
+#!/usr/bin/env bash
 killall runningboardd || echo "Target process was not running."
