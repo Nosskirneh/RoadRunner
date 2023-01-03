@@ -80,19 +80,30 @@ static inline FBApplicationProcess *getProcessForPID(int pid) {
 static inline void sendMessageForMethodAndArguments(SEL method, NSArray *arguments) {
     RBSXPCMessage *message = nil;
     Class xpcMessageClass = %c(RBSXPCMessage);
-    if ([xpcMessageClass respondsToSelector:@selector(messageForMethod:arguments:)]) {
+    SEL messageForMethodSel = @selector(messageForMethod:arguments:);
+    if ([xpcMessageClass respondsToSelector:messageForMethodSel]) {
         message = [xpcMessageClass messageForMethod:method arguments:arguments];
     } else {
-        RBSXPCMessage *(* messageForMethodAndArguments)(Class, SEL, SEL, NSArray *) = (RBSXPCMessage *(*)(Class, SEL, SEL, NSArray *))make_sym_callable(MSFindSymbol(NULL, "+[RBSXPCMessage messageForMethod:arguments:]"));
-        message = messageForMethodAndArguments(xpcMessageClass, @selector(messageForMethod:arguments:), method, arguments);
+        RBSXPCMessage *(* messageForMethodAndArguments)(Class, SEL, SEL, NSArray *) =
+            (RBSXPCMessage *(*)(Class, SEL, SEL, NSArray *))make_sym_callable(
+                MSFindSymbol(NULL, "+[RBSXPCMessage messageForMethod:arguments:]"));
+        message = messageForMethodAndArguments(xpcMessageClass, messageForMethodSel, method, arguments);
     }
 
     RBSConnection *rbsConnection = [%c(RBSConnection) sharedInstance];
     id connection = [rbsConnection respondsToSelector:@selector(_connection)] ?
         [rbsConnection _connection] : MSHookIvar<id>(rbsConnection, "_connection");
-    [message invokeOnConnection:connection
-                withReturnClass:nil
-                          error:nil];
+    SEL invokeOnConnectionSel = @selector(invokeOnConnection:withReturnClass:error:);
+    if ([message respondsToSelector:invokeOnConnectionSel]) {
+        [message invokeOnConnection:connection
+                    withReturnClass:nil
+                              error:nil];
+    } else {
+        RBSXPCMessage *(* invokeOnConnection)(id, SEL, id, Class, NSError **) =
+            (RBSXPCMessage *(*)(id, SEL, id, Class, NSError **))make_sym_callable(
+                MSFindSymbol(NULL, "-[RBSXPCMessage invokeOnConnection:withReturnClass:error:]"));
+        invokeOnConnection(message, invokeOnConnectionSel, connection, nil, nil);
+    }
 }
 
 __attribute__((always_inline, visibility("hidden")))
