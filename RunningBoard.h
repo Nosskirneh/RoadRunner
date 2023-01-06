@@ -1,6 +1,7 @@
 #import "RunningBoardServices.h"
 
-#define kParentProcessDied 0xB111B111
+#define kParentProcessDied 0xB111B111 // killall SpringBoard
+#define kSpringBoardLegacyClearTheBoard 0x5BC1EA45 // install tweaks with theos
 
 
 @interface RBSProcessHandle (RB)

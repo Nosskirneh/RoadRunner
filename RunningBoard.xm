@@ -81,7 +81,8 @@ static BOOL inline shouldExcludeAppForIdentity(RBSProcessIdentity *identity) {
 
     BOOL validReason = [context.explanation isEqualToString:@"/usr/libexec/backboardd respawn"] ||
                        [context.explanation isEqualToString:@"SBRestartManager"] ||
-                       context.exceptionCode == kParentProcessDied;
+                       context.exceptionCode == kParentProcessDied ||
+                       context.exceptionCode == kSpringBoardLegacyClearTheBoard;
     if (!validReason) {
         return %orig;
     }
