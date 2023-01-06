@@ -3,6 +3,7 @@
 #import "SpringBoard.h"
 #import "RRManager.h"
 #import <HBLog.h>
+#import "DRMValidateOptions.mm"
 
 
 RRManager *manager;
@@ -71,27 +72,85 @@ static RBSProcessState *initProcessStateWithCoder(RBSProcessState *self, BSXPCCo
 %end
 
 
-void init() {
-    %init;
+%group PackagePirated
+%hook SBCoverSheetPresentationManager
 
-    if ([%c(RBSConnection) instancesRespondToSelector:@selector(_handleDaemonDidStart)]) {
-        %init(iOS13);
-    } else {
-        %init(iOS14, _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"));
-    }
+- (void)_cleanupDismissalTransition {
+    %orig;
 
-    if ([%c(RBSProcessState) instancesRespondToSelector:@selector(encodeWithBSXPCCoder:)]) {
-        %init(RBSProcessState_iOS13);
-    } else {
-        %init(RBSProcessState_iOS14);
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        showPiracyAlert(packageShown$bs());
+    });
+}
+
+%end
+%end
+
+
+%group Welcome
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
+}
+
+%end
+%end
+
+
+%group CheckTrialEnded
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+
+    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
+        [manager setTrialEnded];
+        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
     }
 }
+
+%end
+%end
+
+
+typedef struct : IInitFunctions {
+    void normal() {
+        %init;
+
+        if ([%c(RBSConnection) instancesRespondToSelector:@selector(_handleDaemonDidStart)]) {
+            %init(iOS13);
+        } else {
+            %init(iOS14, _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"));
+        }
+
+        if ([%c(RBSProcessState) instancesRespondToSelector:@selector(encodeWithBSXPCCoder:)]) {
+            %init(RBSProcessState_iOS13);
+        } else {
+            %init(RBSProcessState_iOS14);
+        }
+    };
+    void welcome() {
+        %init(Welcome);
+    };
+    void trial() {
+        %init(CheckTrialEnded);
+    };
+    void pirated() {
+        %init(PackagePirated);
+    };
+} InitFunctions;
+
+IInitFunctions *initFunctions;
 
 %ctor {
     if (%c(SpringBoard)) {
         if (!isEnabled())
             return;
-
+        InitFunctions _initFunctions = InitFunctions();
+        initFunctions = &_initFunctions;
         manager = [[RRManager alloc] init];
     }
 }

@@ -14,64 +14,6 @@
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 #define kKilledByAppSwitcher 1
 
-extern RRManager *manager;
-
-%group PackagePirated
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        showPiracyAlert(packageShown$bs());
-    });
-}
-
-%end
-%end
-
-
-%group Welcome
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
-}
-
-%end
-%end
-
-
-%group CheckTrialEnded
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
-        [manager setTrialEnded];
-        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
-    }
-}
-
-%end
-%end
-
-
-__attribute__((always_inline, visibility("hidden")))
-static inline void initTrial() {
-    %init(CheckTrialEnded);
-}
-
-inline void initWelcome() {
-    %init(Welcome);
-}
-
-extern void init();
-
-
 
 static inline FBApplicationProcess *getProcessForPID(int pid) {
     return [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
@@ -113,25 +55,26 @@ static inline void sendValidateLicense() {
 
 @implementation RRManager
 
+extern IInitFunctions *initFunctions;
+
 - (id)init {
     if (fromUntrustedSource(package$bs())) {
-        %init(PackagePirated);
+        initFunctions->pirated();
         return nil;
     }
-
     self = [super init];
 
     /* License check – if no license found, present message.
        If no valid license found, do not init. */
     switch (check_lic(licensePath$bs(), package$bs())) {
         case CheckNoLicense:
-            initWelcome();
+            initFunctions->welcome();
             return self;
         case CheckInvalidTrialLicense:
-            initTrial();
+            initFunctions->trial();
             return self;
         case CheckValidTrialLicense:
-            initTrial();
+            initFunctions->trial();
             break;
         case CheckValidLicense:
             break;
@@ -143,7 +86,7 @@ static inline void sendValidateLicense() {
             return self;
     }
     // ---
-    init();
+    initFunctions->normal();
 
     int token;
     notify_register_dispatch(kSBSpringBoardDidLaunchNotification,
