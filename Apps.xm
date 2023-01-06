@@ -3,8 +3,6 @@
 #import <Foundation/Foundation.h>
 #import <HBLog.h>
 #import <UIKit/UIKit.h>
-#import <SafariServices/SFSafariViewController.h>
-#import <SafariServices/SFAuthenticationSession.h>
 
 @interface UIScene : UIResponder
 @end
@@ -25,23 +23,6 @@
 @interface _UISceneLifecycleMultiplexer : NSObject
 + (UIWindowScene *)mostActiveScene;
 @end
-
-@interface SFAuthenticationViewController : SFSafariViewController
-@property (assign, nonatomic) SFAuthenticationSession *presentationDelegate;
-- (void)_presentViewController;
-@end
-
-SFAuthenticationViewController *safariAuthViewController;
-
-%hook SFAuthenticationViewController
-
-- (void)_presentViewController {
-    %orig;
-    safariAuthViewController = self;
-}
-
-%end
-
 
 
 %group NoNewWindowFix
@@ -128,14 +109,6 @@ static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                     [responder becomeFirstResponder];
-                });
-            }
-
-            if (safariAuthViewController) {
-                SFAuthenticationSession *safariAuthSession = safariAuthViewController.presentationDelegate;
-                [safariAuthSession cancel];
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                    [safariAuthViewController _presentViewController];
                 });
             }
         });
