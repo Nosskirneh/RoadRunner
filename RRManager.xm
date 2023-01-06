@@ -107,15 +107,13 @@ static inline void sendMessageForMethodAndArguments(SEL method, NSArray *argumen
 }
 
 __attribute__((always_inline, visibility("hidden")))
-static inline void setRunning(BOOL running) {
-    sendMessageForMethodAndArguments(SET_RUNNING, @[@(running)]);
+static inline void sendValidateLicense() {
+    sendMessageForMethodAndArguments(CHECK_LICENSE, @[GET_UDID()]);
 }
 
 @implementation RRManager
 
 - (id)init {
-    setRunning(NO);
-
     if (fromUntrustedSource(package$bs())) {
         %init(PackagePirated);
         return nil;
@@ -146,7 +144,6 @@ static inline void setRunning(BOOL running) {
     }
     // ---
     init();
-    setRunning(YES);
 
     int token;
     notify_register_dispatch(kSBSpringBoardDidLaunchNotification,
@@ -267,7 +264,7 @@ static inline void setRunning(BOOL running) {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     [self sendNowPlayingPIDInfo:nil];
-    setRunning(NO);
+    sendValidateLicense();
 }
 
 - (void)dealloc {
@@ -275,6 +272,10 @@ static inline void setRunning(BOOL running) {
 }
 
 - (void)handleDaemonDidStart {
+    // License check is done in runningboard too, to avoid controling it from here.
+    // But we need to send the UDID since it doesn't have the right entitlements to
+    // retrieve the ECID.
+    sendValidateLicense();
     MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_main_queue(), ^(int pid) {
         if (pid > 0)
             [self sendNowPlayingPIDInfo:@(pid)];

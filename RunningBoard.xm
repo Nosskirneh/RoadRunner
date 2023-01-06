@@ -4,11 +4,12 @@
 #import "RunningBoard.h"
 #import "SettingsKeys.h"
 #import <notify.h>
+#import "DRMValidateOptions.mm"
 
 #import <xpc/xpc.h>
 typedef NSObject<OS_xpc_object> *xpc_object_t;
 
-static BOOL running;
+static BOOL running = false;
 static BOOL excludeOtherApps;
 static BOOL isWhitelist;
 static NSSet *listedApps;
@@ -210,8 +211,18 @@ static BOOL handleMessage(RBConnectionClient *self, xpc_object_t xpc_dictionary)
             return YES;
         }
 
-        if (strcmp(selName, sel_getName(SET_RUNNING)) == 0) {
-            running = xpc_dictionary_get_bool(xpc_dictionary, "rbs_argument_0");
+        if (strcmp(selName, sel_getName(CHECK_LICENSE)) == 0) {
+            const char *udid = xpc_dictionary_get_string(xpc_dictionary, "rbs_argument_0");
+            switch (check_lic_full(licensePath$bs(), package$bs(), [NSString stringWithUTF8String:udid])) {
+                case CheckValidTrialLicense:
+                case CheckValidLicense:
+                    running = true;
+                    break;
+                default:
+                    running = false;
+                    break;
+            }
+
             return YES;
         }
     }
