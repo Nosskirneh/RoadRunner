@@ -3,6 +3,8 @@
 #import <Foundation/Foundation.h>
 #import <HBLog.h>
 #import <UIKit/UIKit.h>
+#import <SafariServices/SFSafariViewController.h>
+#import <SafariServices/SFAuthenticationSession.h>
 
 @interface UIScene : UIResponder
 @end
