@@ -24,7 +24,9 @@
 
 - (void)respring {
     killProcess("runningboardd");
-    respring(NO);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        respring(NO);
+    });
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {

@@ -31,7 +31,7 @@ after-install::
 		install.exec "killall -9 Spotify"
 else
 after-install::
-		install.exec "killall -9 runningboardd backboardd"
+		install.exec "killall SpringBoard && sleep 1 && killall -9 runningboardd"
 endif
 
 SUBPROJECTS += preferences
