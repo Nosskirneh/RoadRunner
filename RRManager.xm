@@ -192,7 +192,6 @@ extern IInitFunctions *initFunctions;
         }
     );
 
-    sendValidateLicense();
     return self;
 }
 
