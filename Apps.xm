@@ -3,11 +3,19 @@
 #import <Foundation/Foundation.h>
 #import <HBLog.h>
 #import <UIKit/UIKit.h>
+#import "DecodeProcessStateHooks.h"
+#import "RunningBoardServices.h"
 
 @interface UIScene : UIResponder
 @end
 
 @interface UIWindowScene : UIScene
+- (NSArray<UIWindow *> *)_allWindows;
+- (void)_attachWindow:(UIWindow *)window;
+@end
+
+@interface UISceneSession : NSObject
+@property (nonatomic, readonly) NSString *role;
 @end
 
 @interface UIWindow (Private)
@@ -26,17 +34,27 @@
 
 
 %group NoNewWindowFix
-static BOOL didConnectToScene;
+static UIWindowScene *oldWindowScene;
 
 %hook SceneDelegate
 
-// In some apps, a new window is loaded here in this method.
-// If that has already been done, ignore this call.
-- (void)scene:(UIScene *)scene willConnectToSession:(id)session options:(id)connectionOptions {
-    if (!didConnectToScene) {
-        didConnectToScene = YES;
-        %orig;
+// We need to create a new FBScene in SpringBoard when opening the app again.
+// This is done automatically, but when doing so, some apps create a new window
+// scene that does not contain the key window. To solve this, we simply move
+// all the windows to the right scene.
+- (void)scene:(UIWindowScene *)scene willConnectToSession:(UISceneSession *)session options:(id)connectionOptions {
+    if ([session.role isEqualToString:@"UIWindowSceneSessionRoleApplication"]) {
+        RBSProcessState *state = [[%c(RBSProcessHandle) currentProcess] currentState];
+        if (state.immortal) {
+            NSArray *allWindows = [oldWindowScene _allWindows];
+            for (UIWindow *window in allWindows) {
+                [scene _attachWindow:window];
+            }
+        }
+
+        oldWindowScene = scene;
     }
+    %orig;
 }
 
 %end
@@ -49,21 +67,25 @@ static BOOL didConnectToScene;
 
 static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
     if (delegateClass) {
-        %init(NoNewWindowFix, SceneDelegate = delegateClass);
+        static dispatch_once_t once;
+        dispatch_once(&once, ^{
+            %init(NoNewWindowFix, SceneDelegate = delegateClass);
+        });
     }
 }
 
 %hook UISceneConfiguration
 
+- (id)_initWithConfiguration:(id)arg1 {
+    UISceneConfiguration *_self = %orig;
+    tryInitSceneDelegateHooksForClass([_self delegateClass]);
+    return _self;
+}
+
 - (id)initWithName:(id)name sessionRole:(id)sessionRole {
     self = %orig;
     tryInitSceneDelegateHooksForClass([self delegateClass]);
     return self;
-}
-
-- (void)setDelegateClass:(Class)delegateClass {
-    %orig;
-    tryInitSceneDelegateHooksForClass(delegateClass);
 }
 
 %end
@@ -88,6 +110,8 @@ static inline void tryInitSceneDelegateHooksForClass(Class delegateClass) {
                                                         @"com.apple.iMessageAppsViewService"]];
     if (![blacklistedBundleIDs containsObject:bundleID]) {
         %init;
+        initDecodeProcessStateHooks();
+
         addBecomeActiveObserver(^{
             UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
 

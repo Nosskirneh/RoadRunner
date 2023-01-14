@@ -43,12 +43,16 @@ typedef enum RBSTaskState {
 @property (nonatomic, copy, readonly) RBSProcessIdentity *identity;
 @property (nonatomic, readonly) int pid;
 + (id)handleForKey:(NSUInteger)pid fetchIfNeeded:(BOOL)fetchIfNeeded;
++ (id)currentProcess;
 @end
 
 
 @interface RBSProcessState : NSObject
 @property (nonatomic, readonly) RBSProcessHandle *process;
 @property (assign, nonatomic) unsigned char taskState;
+
+@property (nonatomic, assign) BOOL partying;
+@property (nonatomic, assign) BOOL immortal;
 @end
 
 @interface BSXPCCoder : NSObject

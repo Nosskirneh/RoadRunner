@@ -4,36 +4,10 @@
 #import "RRManager.h"
 #import <HBLog.h>
 #import "DRMValidateOptions.mm"
+#import "DecodeProcessStateHooks.h"
 
 
 RRManager *manager;
-
-
-/* Transfer the binary data back to our properties. */
-%hook RBSProcessState
-
-%property (nonatomic, assign) BOOL partying;
-%property (nonatomic, assign) BOOL immortal;
-
-static RBSProcessState *initProcessStateWithCoder(RBSProcessState *self, BSXPCCoder *coder) {
-    self.partying = [coder decodeBoolForKey:kPartyingProcess];
-    self.immortal = [coder decodeBoolForKey:kImmortalProcess];
-    return self;
-}
-
-%group RBSProcessState_iOS13
-- (id)initWithBSXPCCoder:(BSXPCCoder *)coder {
-    return initProcessStateWithCoder(%orig, coder);
-}
-%end
-
-%group RBSProcessState_iOS14
-- (id)initWithRBSXPCCoder:(BSXPCCoder *)coder {
-    return initProcessStateWithCoder(%orig, coder);
-}
-%end
-
-%end
 
 
 %group iOS14
@@ -126,11 +100,7 @@ typedef struct : IInitFunctions {
             %init(iOS14, _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"));
         }
 
-        if ([%c(RBSProcessState) instancesRespondToSelector:@selector(encodeWithBSXPCCoder:)]) {
-            %init(RBSProcessState_iOS13);
-        } else {
-            %init(RBSProcessState_iOS14);
-        }
+        initDecodeProcessStateHooks();
     };
     void welcome() {
         %init(Welcome);
