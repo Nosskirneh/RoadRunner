@@ -14,7 +14,7 @@
 @implementation RRAppListController
 
 - (id)specifiers {
-	if (_specifiers == nil) {
+    if (_specifiers == nil) {
         NSMutableArray *specifiers = [NSMutableArray new];
         PSSpecifier *spec;
 
@@ -31,7 +31,7 @@
         _specifiers = specifiers;
     }
 
-	return _specifiers;
+    return _specifiers;
 }
 
 - (void)addApplicationsToList:(NSMutableArray *)specifiers systemApps:(BOOL)systemApps {
