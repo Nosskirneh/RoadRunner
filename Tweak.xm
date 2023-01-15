@@ -9,25 +9,19 @@
 
 RRManager *manager;
 
-
-%group iOS14
+// When runningboardd restarts, this fires
+%group RBSBootstrap
 %hookf(void, _handleDaemonDidStart, RBSConnection *self, SEL _cmd) {
     %orig;
-
-    [manager handleDaemonDidStart];
-}
-%end
-
-%group iOS13
-%hook RBSConnection
-
-- (void)_handleDaemonDidStart {
-    %orig;
-
     [manager handleDaemonDidStart];
 }
 
-%end
+// When SpringBoard restarts, this fires
+%hookf(id, _init, RBSService *self, SEL _cmd) {
+    self = %orig;
+    [manager handleDaemonDidStart];
+    return self;
+}
 %end
 
 
@@ -93,12 +87,10 @@ RRManager *manager;
 typedef struct : IInitFunctions {
     void normal() {
         %init;
-
-        if ([%c(RBSConnection) instancesRespondToSelector:@selector(_handleDaemonDidStart)]) {
-            %init(iOS13);
-        } else {
-            %init(iOS14, _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"));
-        }
+        %init(RBSBootstrap,
+            _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"),
+            _init = MSFindSymbol(NULL, "-[RBSService _init]")
+        );
 
         initDecodeProcessStateHooks();
     };

@@ -14,6 +14,11 @@ typedef enum RBSTaskState {
 - (id)_connection;
 @end
 
+@interface RBSService : NSObject {
+    RBSConnection *_connection;
+}
+@end
+
 @interface RBSProcessIdentity : NSObject
 @property (getter=isEmbeddedApplication, nonatomic, readonly) BOOL embeddedApplication;
 @property (nonatomic, copy, readonly) NSString *embeddedApplicationIdentifier;
