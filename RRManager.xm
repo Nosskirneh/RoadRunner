@@ -218,6 +218,15 @@ extern IInitFunctions *initFunctions;
 }
 
 - (void)handleDaemonDidStart {
+    switch (check_lic(licensePath$bs(), package$bs())) {
+        case CheckValidLicense:
+        case CheckValidTrialLicense:
+            setRunning(YES);
+            break;
+        default:
+            break;
+    }
+
     MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_main_queue(), ^(int pid) {
         if (pid > 0)
             [self sendNowPlayingPIDInfo:@(pid)];
