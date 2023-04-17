@@ -1,18 +1,23 @@
+#import "../Common.h"
 #import <UIKit/UIKit.h>
 #import <HBLog.h>
 #import "RRSettingsListController.h"
 #import <Preferences/Preferences.h>
 #import <UIKit/UITableViewLabel.h>
+#if DRM == 1
 #import "../DRMOptions.mm"
 #import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
+#endif
 #import <spawn.h>
 #import <notify.h>
-#import "../../TwitterStuff/Prompt.h"
+#import <dlfcn.h>
+#import "TwitterStuff/Prompt.h"
 #import "../SettingsKeys.h"
 #import "RRAppListController.h"
 #import "LocalizableKeys.h"
 
 #define ICON_DESIGNER @"bossgfx_"
+
 
 // Header
 @interface RRSettingsHeaderCell : PSTableCell {
@@ -31,11 +36,14 @@
 @interface RRColorButtonCell : PSTableCell
 @end
 
-@interface RRRootListController : RRSettingsListController <PFStatusBarAlertDelegate, DRMDelegate>
+@interface RRRootListController : RRSettingsListController 
+#if DRM == 1
+<PFStatusBarAlertDelegate, DRMDelegate>
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
 @property (nonatomic, weak) UIAlertAction *okAction;
 @property (nonatomic, weak) NSString *okRegex;
 @property (nonatomic, strong) UIAlertController *giveawayAlertController;
+#endif
 @end
 
 @implementation RRRootListController
@@ -127,9 +135,11 @@
     [specifiers addObject:[self createButtonCellWithLabel:stringForKey(kEMAIL_ME)
                                                  selector:@selector(sendEmail)]];
 
+    #if DRM == 1
     // Add license specifiers
     specifiers = addDRMSpecifiers(specifiers, self, licensePath$bs(), kPrefPath,
                                   package$bs(), licenseFooterText$bs(), trialFooterText$bs());
+    #endif
 
     _specifiers = specifiers;
     return specifiers;
@@ -225,6 +235,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    #if DRM == 1
     if (!self.statusAlert) {
         self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
                                                         notification:nil
@@ -236,6 +247,7 @@
                                                            alpha:0.9];
         self.statusAlert.textColor = [UIColor whiteColor];
     }
+    #endif
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
@@ -260,8 +272,21 @@
     [super setPreferenceValue:value specifier:specifier];
 }
 
+#if DRM == 1
 - (void)activate {
     activate(licensePath$bs(), package$bs(), self);
+}
+
+- (void)trial {
+    trial(licensePath$bs(), package$bs(), self);
+}
+
+- (void)purchase {
+    fetchPrice(package$bs(), self, ^(const NSString *respondingServer,
+                                     const NSString *price,
+                                     const NSString *URL) {
+        redirectToCheckout(respondingServer, URL, self);
+    });
 }
 
 - (BOOL)textField:(UITextField *)textField
@@ -273,10 +298,6 @@
 
 - (void)textFieldChanged:(UITextField *)textField {
     determineUnlockOKButton(textField, self);
-}
-
-- (void)trial {
-    trial(licensePath$bs(), package$bs(), self);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -292,20 +313,17 @@
         [self.statusAlert hideOverlay];
 }
 
+- (void)safariViewControllerDidFinish:(id)arg1 {
+    safariViewControllerDidFinish(self);
+}
+#endif
+
 - (void)sendEmail {
     openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=RoadRunner"]);
 }
 
 - (void)followTwitter {
     openTwitter();
-}
-
-- (void)purchase {
-    fetchPrice(package$bs(), self, ^(const NSString *respondingServer,
-                                     const NSString *price,
-                                     const NSString *URL) {
-        redirectToCheckout(respondingServer, URL, self);
-    });
 }
 
 - (void)myTweaks {
@@ -318,10 +336,6 @@
 
 - (void)discordServer {
     openURL([NSURL URLWithString:@"https://discord.gg/znn8wfw"]);
-}
-
-- (void)safariViewControllerDidFinish:(id)arg1 {
-    safariViewControllerDidFinish(self);
 }
 
 @end

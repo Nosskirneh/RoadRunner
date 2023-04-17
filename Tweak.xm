@@ -3,7 +3,9 @@
 #import "SpringBoard.h"
 #import "RRManager.h"
 #import <HBLog.h>
+#if DRM == 1
 #import "DRMValidateOptions.mm"
+#endif
 #import "DecodeProcessStateHooks.h"
 
 
@@ -40,6 +42,7 @@ RRManager *manager;
 %end
 
 
+#if DRM == 1
 %group PackagePirated
 %hook SBCoverSheetPresentationManager
 
@@ -82,6 +85,7 @@ RRManager *manager;
 
 %end
 %end
+#endif
 
 
 typedef struct : IInitFunctions {
@@ -94,6 +98,7 @@ typedef struct : IInitFunctions {
 
         initDecodeProcessStateHooks();
     };
+    #if DRM == 1
     void welcome() {
         %init(Welcome);
     };
@@ -103,6 +108,11 @@ typedef struct : IInitFunctions {
     void pirated() {
         %init(PackagePirated);
     };
+    #else
+    void welcome() {}
+    void trial() {}
+    void pirated() {}
+    #endif
 } InitFunctions;
 
 IInitFunctions *initFunctions;

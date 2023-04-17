@@ -7,7 +7,9 @@
 #import "FrontBoard.h"
 #import "SpringBoard.h"
 #import "SettingsKeys.h"
+#if DRM == 1
 #import "DRMValidateOptions.mm"
+#endif
 #import <ptrauth-helpers.h>
 
 #define kSBSpringBoardDidLaunchNotification "SBSpringBoardDidLaunchNotification"
@@ -60,12 +62,15 @@ extern IInitFunctions *initFunctions;
 - (id)init {
     setRunning(NO);
 
+    #if DRM == 1
     if (fromUntrustedSource(package$bs())) {
         initFunctions->pirated();
         return nil;
     }
+    #endif
     self = [super init];
 
+    #if DRM == 1
     /* License check – if no license found, present message.
        If no valid license found, do not init. */
     switch (check_lic(licensePath$bs(), package$bs())) {
@@ -87,6 +92,7 @@ extern IInitFunctions *initFunctions;
             [self setTrialEnded];
             return self;
     }
+    #endif
     // ---
     initFunctions->normal();
     setRunning(YES);
@@ -218,6 +224,7 @@ extern IInitFunctions *initFunctions;
 }
 
 - (void)handleDaemonDidStart {
+    #if DRM == 1
     switch (check_lic(licensePath$bs(), package$bs())) {
         case CheckValidLicense:
         case CheckValidTrialLicense:
@@ -226,6 +233,9 @@ extern IInitFunctions *initFunctions;
         default:
             break;
     }
+    #else
+    setRunning(YES);
+    #endif
 
     MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_main_queue(), ^(int pid) {
         if (pid > 0)

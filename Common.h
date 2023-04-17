@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+#define DRM 1
+
 
 #define NOW_PLAYING_APP_CHANGED_SELECTOR @selector(nowPlayingAppChanged:)
 #define SET_RUNNING @selector(setRunning:)

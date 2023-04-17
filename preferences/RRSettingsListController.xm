@@ -1,6 +1,8 @@
 #import "RRSettingsListController.h"
 #import <notify.h>
+#if DRM == 1
 #import "../../DRM/respring.xm"
+#endif
 #import "LocalizableKeys.h"
 
 @interface UISegmentedControl (Missing)
@@ -23,10 +25,13 @@
 @implementation RRSettingsListController
 
 - (void)respring {
+    // This is not optimal, but debug savvy people will have to respring from the terminal...
+    #if DRM == 1
     killProcess("runningboardd");
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         respring(NO);
     });
+    #endif
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
