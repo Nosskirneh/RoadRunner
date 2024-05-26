@@ -11,8 +11,7 @@ endif
 include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = RoadRunnerPrefs
-$(BUNDLE_NAME)_FILES = RRRootListController.m $(wildcard *.xm) $(wildcard *.m) ../SettingsKeys.m TwitterStuff/Prompt.m \
-    $(wildcard ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm)
+$(BUNDLE_NAME)_FILES = RRRootListController.m $(wildcard *.xm) $(wildcard *.m) ../SettingsKeys.m TwitterStuff/Prompt.m
 $(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 $(BUNDLE_NAME)_FRAMEWORKS = UIKit
 $(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences

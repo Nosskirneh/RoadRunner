@@ -209,11 +209,6 @@ static BOOL handleMessage(RBConnectionClient *self, xpc_object_t xpc_dictionary)
             [processManager nowPlayingAppChanged:bundleID];
             return YES;
         }
-
-        if (strcmp(selName, sel_getName(SET_RUNNING)) == 0) {
-            running = xpc_dictionary_get_bool(xpc_dictionary, "rbs_argument_0");
-            return YES;
-        }
     }
     return NO;
 }
@@ -258,7 +253,6 @@ static BOOL handleMessage(RBConnectionClient *self, xpc_object_t xpc_dictionary)
     );
     loadPreferences();
 
-    // No need to check license here as SpringBoard checks that
     %init;
     if ([%c(RBConnectionClient) instancesRespondToSelector:@selector(handleMessage:)]) {
         %init(iOS13);

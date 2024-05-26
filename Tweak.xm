@@ -3,9 +3,6 @@
 #import "SpringBoard.h"
 #import "RRManager.h"
 #import <HBLog.h>
-#if DRM == 1
-#import "DRMValidateOptions.mm"
-#endif
 #import "DecodeProcessStateHooks.h"
 
 
@@ -41,88 +38,15 @@ RRManager *manager;
 
 %end
 
-
-#if DRM == 1
-%group PackagePirated
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        showPiracyAlert(packageShown$bs());
-    });
-}
-
-%end
-%end
-
-
-%group Welcome
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
-}
-
-%end
-%end
-
-
-%group CheckTrialEnded
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
-        [manager setTrialEnded];
-        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
-    }
-}
-
-%end
-%end
-#endif
-
-
-typedef struct : IInitFunctions {
-    void normal() {
+%ctor {
+    if (%c(SpringBoard)) {
+        if (!isEnabled())
+            return;
         %init;
         %init(RBSBootstrap,
             _handleDaemonDidStart = MSFindSymbol(NULL, "-[RBSConnection _handleDaemonDidStart]"),
             _init = MSFindSymbol(NULL, "-[RBSService _init]")
         );
-
-        initDecodeProcessStateHooks();
-    };
-    #if DRM == 1
-    void welcome() {
-        %init(Welcome);
-    };
-    void trial() {
-        %init(CheckTrialEnded);
-    };
-    void pirated() {
-        %init(PackagePirated);
-    };
-    #else
-    void welcome() {}
-    void trial() {}
-    void pirated() {}
-    #endif
-} InitFunctions;
-
-IInitFunctions *initFunctions;
-
-%ctor {
-    if (%c(SpringBoard)) {
-        if (!isEnabled())
-            return;
-        InitFunctions _initFunctions = InitFunctions();
-        initFunctions = &_initFunctions;
         manager = [[RRManager alloc] init];
     }
 }

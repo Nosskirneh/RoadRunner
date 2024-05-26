@@ -1,8 +1,7 @@
 #import "RRSettingsListController.h"
 #import <notify.h>
-#if DRM == 1
-#import "../../DRM/respring.xm"
-#endif
+#import <objc/runtime.h>
+#import <spawn.h>
 #import "LocalizableKeys.h"
 
 @interface UISegmentedControl (Missing)
@@ -21,17 +20,60 @@
 @property (retain) UISlider *control;
 @end
 
+typedef enum {
+      NoneRespringStyle      = 0,
+      RestartRenderServer    = (1 << 0), // also relaunch backboardd
+      SnapshotTransition     = (1 << 1),
+      FadeToBlackTransition  = (1 << 2),
+} SBSRelaunchActionStyle;
+
+@interface SBSRelaunchAction : NSObject
++ (id)actionWithReason:(NSString *)reason
+               options:(SBSRelaunchActionStyle)options
+             targetURL:(NSURL *)url;
+@end
+
+@interface SBSRestartRenderServerAction : SBSRelaunchAction
++ (id)restartActionWithTargetRelaunchURL:(NSURL *)url;
+@end
+
+@interface FBSSystemService : NSObject
++ (id)sharedService;
+- (void)sendActions:(NSSet *)actions withResult:(id)completion;
+@end
+
+
+static void killProcess(const char *name) {
+    pid_t pid;
+    int status;
+    const char *args[] = { "killall", "-9", name, NULL };
+    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
+    waitpid(pid, &status, WEXITED);
+}
+
+static void respring() {
+    if (objc_getClass("FBSSystemService")) {
+        Class relaunchAction = objc_getClass("SBSRelaunchAction");
+        SBSRelaunchAction *restartAction = relaunchAction ?
+                                               [relaunchAction actionWithReason:@"RestartRenderServer"
+                                                                        options:FadeToBlackTransition
+                                                                      targetURL:nil] :
+                                               [objc_getClass("SBSRestartRenderServerAction") restartActionWithTargetRelaunchURL:nil];
+        [[objc_getClass("FBSSystemService") sharedService] sendActions:[NSSet setWithObject:restartAction]
+                                                            withResult:nil];
+    } else {
+        killProcess("SpringBoard");
+    }
+}
 
 @implementation RRSettingsListController
 
 - (void)respring {
     // This is not optimal, but debug savvy people will have to respring from the terminal...
-    #if DRM == 1
     killProcess("runningboardd");
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        respring(NO);
+        respring();
     });
-    #endif
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {

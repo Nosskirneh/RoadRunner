@@ -22,4 +22,5 @@
 - (void)presentAlertWithTitle:(NSString *)title
                       message:(NSString *)message
                       actions:(NSArray<UIAlertAction *> *)actions;
+- (void)respring;
 @end

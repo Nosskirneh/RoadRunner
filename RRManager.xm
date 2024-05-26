@@ -7,9 +7,6 @@
 #import "FrontBoard.h"
 #import "SpringBoard.h"
 #import "SettingsKeys.h"
-#if DRM == 1
-#import "DRMValidateOptions.mm"
-#endif
 #import <ptrauth-helpers.h>
 
 #define kSBSpringBoardDidLaunchNotification "SBSpringBoardDidLaunchNotification"
@@ -50,52 +47,10 @@ static inline void sendMessageForMethodAndArguments(SEL method, NSArray *argumen
     }
 }
 
-__attribute__((always_inline, visibility("hidden")))
-static inline void setRunning(BOOL running) {
-    sendMessageForMethodAndArguments(SET_RUNNING, @[@(running)]);
-}
-
 @implementation RRManager
 
-extern IInitFunctions *initFunctions;
-
 - (id)init {
-    setRunning(NO);
-
-    #if DRM == 1
-    if (fromUntrustedSource(package$bs())) {
-        initFunctions->pirated();
-        return nil;
-    }
-    #endif
     self = [super init];
-
-    #if DRM == 1
-    /* License check – if no license found, present message.
-       If no valid license found, do not init. */
-    switch (check_lic(licensePath$bs(), package$bs())) {
-        case CheckNoLicense:
-            initFunctions->welcome();
-            return self;
-        case CheckInvalidTrialLicense:
-            initFunctions->trial();
-            return self;
-        case CheckValidTrialLicense:
-            initFunctions->trial();
-            break;
-        case CheckValidLicense:
-            break;
-        case CheckInvalidLicense:
-        case CheckUDIDsDoNotMatch:
-        default:
-            // In case the user is running a trial license and then removes it
-            [self setTrialEnded];
-            return self;
-    }
-    #endif
-    // ---
-    initFunctions->normal();
-    setRunning(YES);
 
     int token;
     notify_register_dispatch(kSBSpringBoardDidLaunchNotification,
@@ -209,34 +164,11 @@ extern IInitFunctions *initFunctions;
     [[%c(FBProcessManager) sharedInstance] registerProcessForHandle:handle];
 }
 
-/* Unsubscribe to notifications and tell RunningBoard to
-   mark the any current now playing process as not playing. */
-- (void)setTrialEnded {
-    _trialEnded = YES;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-    [self sendNowPlayingPIDInfo:nil];
-    setRunning(NO);
-}
-
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)handleDaemonDidStart {
-    #if DRM == 1
-    switch (check_lic(licensePath$bs(), package$bs())) {
-        case CheckValidLicense:
-        case CheckValidTrialLicense:
-            setRunning(YES);
-            break;
-        default:
-            break;
-    }
-    #else
-    setRunning(YES);
-    #endif
-
     MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_main_queue(), ^(int pid) {
         if (pid > 0)
             [self sendNowPlayingPIDInfo:@(pid)];
