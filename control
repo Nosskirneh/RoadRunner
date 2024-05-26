@@ -1,7 +1,7 @@
 Package: se.nosskirneh.roadrunner
 Name: RoadRunner
 Depends: mobilesubstrate, firmware (>= 13.0), preferenceloader
-Version: 1.0~beta7
+Version: 1.0
 Architecture: iphoneos-arm
 Description: Keep apps alive through resprings
 Depiction: https://henrikssonbrothers.com/cydia/repo/depictions/?p=se.nosskirneh.roadrunner
